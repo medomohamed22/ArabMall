@@ -1,0 +1,221 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f0fa;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.header {
+    background-color: #9c27b0;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.main-content{
+    margin-bottom: 40px;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.chat-container {
+    width: 90%;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    margin: 20px;
+}
+@media (max-width: 600px) {
+    .chat-container {
+        width: 98%;
+        margin: 10px;
+    }
+}
+
+.chat-area {
+    padding: 20px;
+    height: 400px;
+    overflow-y: auto;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-message, .ai-message, .error-message {
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+    max-width: 80%;
+    display: inline-block;
+    word-wrap: break-word;
+    position: relative;
+    line-height: 1.4;
+}
+
+.user-message {
+    background-color: #bbd8eb;
+    align-self: flex-end;
+    text-align: right;
+    margin-right: 0;
+    margin-left: auto;
+}
+.user-message::before {
+    content: "";
+    position: absolute;
+    right: -10px;
+    top: 10px;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid #bbd8eb;
+}
+.ai-message {
+    background-color: #e6e0ec;
+    text-align: left;
+    margin-left: 0;
+    margin-right: auto;
+}
+.ai-message::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 10px;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid #e6e0ec;
+}
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #eee;
+}
+.input-area input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+.input-area button {
+    padding: 10px 15px;
+    background-color: #9c27b0;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.input-area button:hover {
+    background-color: #7b1fa2;
+}
+.ai-message ul {
+    padding-left: 20px;
+}
+.ai-message li {
+    margin-bottom: 5px;
+}
+.typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.6;
+}
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #aaa;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: typing 1s infinite;
+}
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+@keyframes typing {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+.footer {
+    background-color: #9c27b0;
+    color: #fff;
+    padding: 15px 0;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+     transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.footer.hidden {
+    opacity: 0;
+    transform: translateY(100%);
+}
+/* ... باقي أكواد CSS ... */
+.points-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+}
+
+.points-area p {
+    margin: 0;
+    font-weight: bold;
+}
+
+.points-area button {
+    padding: 8px 15px;
+    background-color: #4caf50; /* لون أخضر للزر */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.points-area button:hover {
+    background-color: #43a047;
+}
+/*... باقي أكواد CSS...*/
+/* ... باقي أكواد CSS ... */
+/* تنسيقات رسالة الخطأ */
+.error-message-box {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 10px auto;
+  max-width: 80%;
+  text-align: center;
+  display: none;
+}
+
+.error-message-box.show {
+  display: block;
+}
+
+/* ... باقي أكواد CSS ... */
