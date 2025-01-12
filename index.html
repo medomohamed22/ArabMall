@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#db4938">
+    <title>Pi Ads Example</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Pi Ads</h1>
+        <p>Click the button below to display an ad.</p>
+        <button id="showAdButton">Show Pi Ad</button>
+        <div id="adStatus" class="status"></div>
+    </div>
+
+    <script>
+        // Initialize Pi SDK
+        const Pi = window.Pi;
+        Pi.init({ version: "2.0" });
+
+        // Show Pi Ad
+        async function showPiAd() {
+            try {
+                // Check if ad is ready
+                const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
+
+                if (!isAdReadyResponse.ready) {
+                    await Pi.Ads.requestAd("interstitial");
+                }
+
+                const showAdResponse = await Pi.Ads.showAd("interstitial");
+
+                if (showAdResponse.result === "AD_CLOSED") {
+                    document.getElementById('adStatus').textContent = "Ad closed successfully.";
+                }
+            } catch (err) {
+                document.getElementById('adStatus').textContent = "Error showing ad: " + err.message;
+            }
+        }
+
+        // Add event listener to the button
+        document.getElementById('showAdButton').addEventListener('click', showPiAd);
+    </script>
+</body>
+</html>
