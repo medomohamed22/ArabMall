@@ -1,13 +1,13 @@
 const chatInput = document.getElementById('chat-input');
 const chatArea = document.getElementById('chat-area');
 const sendButton = document.getElementById('send-button');
-const apiKey = 'AIzaSyBbRnH6zZsKyQMbxIg7thGKCappZsJl5GI';
+// إزالة تعريف const apiKey = 'AIzaSyBbRnH6zZsKyQMbxIg7thGKCappZsJl5GI';
 const footer = document.querySelector('.footer');
-const chatStorageKey = 'chatHistory';
-const pointsStorageKey = 'userPoints';
+// إزالة تعريف const chatStorageKey = 'chatHistory';
+// إزالة تعريف const pointsStorageKey = 'userPoints';
 const userPointsDisplay = document.getElementById('user-points');
 const watchAdButton = document.getElementById('watch-ad-button');
-const pointsPerAd = 10;
+// إزالة تعريف const pointsPerAd = 10;
 const errorMessage = document.getElementById('error-message'); // الحصول على عنصر رسالة الخطأ
 
 // تحميل النقاط عند تحميل الصفحة
