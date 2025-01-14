@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحة دفع Pi Network</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .payment-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .amount-input {
+            padding: 0.5rem;
+            margin: 1rem 0;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .pay-button {
+            background-color: #6b4ce6;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .pay-button:hover {
+            background-color: #5639c0;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <h2>الدفع باستخدام Pi Network</h2>
+        <input type="number" class="amount-input" id="paymentAmount" placeholder="أدخل المبلغ" step="0.000001" min="0">
+        <br>
+        <button onclick="initiatePayment()" class="pay-button" id="payButton">دفع باستخدام Pi</button>
+        <div id="statusMessage"></div>
+    </div>
+
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        // تهيئة Pi SDK
+        const Pi = window.Pi;
+        Pi.init({ version: "2.0", sandbox: true });
+
+        // معرف التطبيق الخاص بك - استبدله بمعرفك الحقيقي
+        const APP_ID = "YOUR_APP_ID";
+
+        // عنوان API الخاص بالخادم - استبدله بعنوان خادمك
+        const API_URL = "http://localhost:3000/api";
+
+        let paymentId = null;
+        let txid = null;
+
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        async function initiatePayment() {
+            const payButton = document.getElementById('payButton');
+            const amount = document.getElementById('paymentAmount').value;
+
+            if (!amount || amount <= 0) {
+                showMessage('الرجاء إدخال مبلغ صحيح', 'error');
+                return;
+            }
+
+            payButton.disabled = true;
+            showMessage('جاري بدء عملية الدفع...', 'loading');
+
+            try {
+                // 1. المصادقة على المستخدم
+                const scopes = ['payments'];
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+
+                if (!auth) {
+                    throw new Error('فشلت عملية المصادقة');
+                }
+
+                // 2. إنشاء معاملة دفع على الخادم
+                const paymentData = {
+                    amount: parseFloat(amount),
+                    memo: `طلب رقم: ${Date.now()}`,
+                    metadata: {
+                        orderID: Date.now().toString(),
+                        buyerUID: auth.user.uid
+                    }
+                };
+
+                // 3. إنشاء معاملة دفع مع Pi Network
+                const payment = await Pi.createPayment(paymentData);
+                paymentId = payment.paymentId;
+
+                // 4. إرسال معلومات الدفع إلى الخادم
+                const serverPaymentResponse = await fetch(`${API_URL}/payments/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        paymentId,
+                        amount,
+                        userId: auth.user.uid,
+                        metadata: paymentData.metadata
+                    })
+                });
+
+                if (!serverPaymentResponse.ok) {
+                    throw new Error('فشل في تسجيل الدفع على الخادم');
+                }
+
+                // 5. إكمال عملية الدفع
+                const completedPayment = await Pi.completePayment(paymentId);
+
+                if (completedPayment.status === 'COMPLETED') {
+                    txid = completedPayment.transaction.txid;
+
+                    // 6. تأكيد الدفع على الخادم
+                    const confirmResponse = await fetch(`${API_URL}/payments/confirm`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            paymentId,
+                            txid,
+                            userId: auth.user.uid
+                        })
+                    });
+
+                    if (confirmResponse.ok) {
+                        showMessage('تم الدفع بنجاح!', 'success');
+                    } else {
+                        throw new Error('فشل في تأكيد الدفع على الخادم');
+                    }
+                } else {
+                    throw new Error('لم تكتمل عملية الدفع');
+                }
+            } catch (error) {
+                console.error('خطأ في عملية الدفع:', error);
+                showMessage(`فشلت عملية الدفع: ${error.message}`, 'error');
+            } finally {
+                payButton.disabled = false;
+            }
+        }
+
+        async function onIncompletePaymentFound(payment) {
+            try {
+                showMessage('تم العثور على دفعة غير مكتملة. جاري المعالجة...', 'loading');
+
+                // محاولة إكمال الدفع غير المكتمل
+                const completedPayment = await Pi.completePayment(payment.paymentId);
+
+                if (completedPayment.status === 'COMPLETED') {
+                    // تأكيد الدفع على الخادم
+                    const confirmResponse = await fetch(`${API_URL}/payments/confirm`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            paymentId: payment.paymentId,
+                            txid: completedPayment.transaction.txid
+                        })
+                    });
+
+                    if (confirmResponse.ok) {
+                        showMessage('تم إكمال الدفع المعلق بنجاح!', 'success');
+                    } else {
+                        throw new Error('فشل في تأكيد الدفع على الخادم');
+                    }
+                }
+            } catch (error) {
+                console.error('خطأ في معالجة الدفع غير المكتمل:', error);
+                showMessage('فشل في معالجة الدفع غير المكتمل', 'error');
+            }
+        }
+
+        // دالة مساعدة للتحقق من حالة المعاملة
+        async function checkPaymentStatus(paymentId) {
+            try {
+                const response = await fetch(`${API_URL}/payments/${paymentId}/status`);
+                const data = await response.json();
+                return data.status;
+            } catch (error) {
+                console.error('خطأ في التحقق من حالة الدفع:', error);
+                throw error;
+            }
+        }
+    </script>
+</body>
+</html>
