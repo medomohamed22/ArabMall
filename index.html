@@ -15,121 +15,128 @@
         }
 
         body {
-            background: #1a1a1a; /* Dark background */
+            background: #000; /* Black background */
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            font-family: 'Tajawal', sans-serif; /* Arabic font */
+            padding: 15px; /* Reduced padding */
+            font-family: 'Tajawal', sans-serif;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.08); /* Semi-transparent white */
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 2.5rem; /* Increased padding */
-            width: 95%; /* Increased width */
-            max-width: 700px; /* Reduced max-width */
+            background: rgba(255, 255, 255, 0.05); /* Semi-transparent white */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px; /* Reduced border-radius */
+            padding: 1.8rem; /* Reduced padding */
+            width: 95%;
+            max-width: 500px; /* Reduced max-width */
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); /* More defined shadow */
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); /* Light box-shadow */
         }
 
         h1 {
             color: #fff; /* White heading */
-            margin-bottom: 1.5rem; /* Increased margin */
+            margin-bottom: 1.2rem; /* Reduced margin */
+            font-size: 1.8rem; /* Reduced font-size */
         }
 
         .points-container {
-             background: rgba(255, 255, 255, 0.1);
-            padding: 1.2rem;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            color: #eee; /* Light grey text */
+             background: rgba(255, 255, 255, 0.08); /* Lighter background */
+            padding: 1rem; /* Reduced padding */
+            border-radius: 8px; /* Reduced border-radius */
+            margin-bottom: 1.2rem; /* Reduced margin */
+            color: #ddd; /* Light grey text */
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .points-container span {
-            font-size: 1.1rem;
+            font-size: 1rem; /* Reduced font-size */
         }
 
         .watch-ad-btn {
-            background: #4caf50;
-            color: white;
+            background: #333; /* Dark grey background */
+            color: #fff; /* White text */
             border: none;
-            padding: 0.8rem 1.2rem;
-            border-radius: 6px;
+             padding: 0.6rem 1rem; /* Reduced padding */
+            border-radius: 5px; /* Reduced border-radius */
             cursor: pointer;
             transition: background-color 0.3s ease;
-            font-size: 1rem;
+           font-size: 0.9rem; /* Reduced font-size */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .watch-ad-btn:hover {
-            background: #45a049;
+            background: #444; /* Slightly lighter grey */
         }
 
         .watch-ad-btn:disabled {
-            background: #666;
+            background: #222; /* Even darker grey */
             cursor: not-allowed;
             opacity: 0.7;
         }
         
        .input-group {
            display: flex;
-           margin-bottom: 1.5rem;
+           margin-bottom: 1.2rem; /* Reduced margin */
         }
 
-        .input-group input {
+         .input-group input {
             flex: 1;
-            padding: 0.8rem 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px 0 0 6px; /* Rounded left side */
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-size: 1rem;
-             text-align: right;
+            padding: 0.6rem 0.8rem; /* Reduced padding */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Lighter border */
+            border-radius: 5px 0 0 5px; /* Reduced border-radius */
+            background: rgba(255, 255, 255, 0.03); /* Lighter background */
+            color: #fff; /* White text */
+            font-size: 0.9rem; /* Reduced font-size */
+            text-align: right;
              outline: none;
         }
 
-        .input-group button {
-            padding: 0.8rem 1rem;
-            background: #3498db;
-            color: #fff;
+         .input-group button {
+             padding: 0.6rem 0.8rem; /* Reduced padding */
+             background: #2c2c2c; /* Dark grey */
+            color: #fff; /* White text */
             border: none;
-            border-radius: 0 6px 6px 0; /* Rounded right side */
+             border-radius: 0 5px 5px 0; /* Reduced border-radius */
             cursor: pointer;
             transition: background-color 0.3s ease;
-            font-size: 1rem;
+             font-size: 0.9rem; /* Reduced font-size */
+             display: inline-flex;
+            align-items: center;
+             justify-content: center;
         }
 
         .input-group button:hover {
-             background: #2980b9;
+             background: #3a3a3a; /* Slightly lighter grey */
         }
 
         #loading {
             display: none;
-            margin: 1rem auto;
+            margin: 0.8rem auto; /* Reduced margin */
             align-items: center;
         }
 
         .fancy-spinner {
             display: inline-block;
              position: relative;
-              width: 24px;
-            height: 24px;
-            margin-right: 10px;
+             width: 20px; /* Reduced width */
+            height: 20px; /* Reduced height */
+            margin-right: 8px; /* Reduced margin */
         }
 
         .fancy-spinner div {
             animation: fancy-spinner-frame 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            transform-origin: 12px 12px;
+            transform-origin: 10px 10px; /* Reduced transform-origin */
             background: #fff;
-            width: 3px;
-            height: 10px;
+            width: 2px; /* Reduced width */
+            height: 8px; /* Reduced height */
             position: absolute;
-            border-radius: 2px;
+            border-radius: 1px; /* Reduced border-radius */
              opacity: 0.8;
         }
         
@@ -153,101 +160,125 @@
 
         .loading-text {
             color: #fff;
-            font-size: 1.1rem;
+            font-size: 1rem; /* Reduced font-size */
             display: inline-block;
             vertical-align: middle;
         }
 
         #error {
             color: #e74c3c;
-             font-size: 1rem;
-            margin: 1rem 0;
+            font-size: 0.9rem; /* Reduced font-size */
+            margin: 0.8rem 0; /* Reduced margin */
         }
 
         #result {
-            margin: 1rem 0;
+            margin: 0.8rem 0; /* Reduced margin */
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         .generated-image {
-             max-width: 100%;
-            max-height: 400px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-             margin-bottom: 1rem;
+            max-width: 100%;
+            max-height: 300px; /* Reduced max-height */
+            border-radius: 6px; /* Reduced border-radius */
+            box-shadow: 0 3px 8px rgba(255, 255, 255, 0.08); /* Lighter box-shadow */
+             margin-bottom: 0.8rem; /* Reduced margin */
         }
         
          #download-btn {
             display: none;
-            background: #2ecc71;
-            color: white;
+             background: #333;
+            color: #fff;
             border: none;
-            padding: 0.8rem 1.2rem;
-            border-radius: 6px;
+             padding: 0.6rem 1rem; /* Reduced padding */
+             border-radius: 5px; /* Reduced border-radius */
             cursor: pointer;
             transition: background-color 0.3s ease;
-             margin-top: 1rem;
-             font-size: 1rem;
+             margin-top: 0.8rem; /* Reduced margin */
+            font-size: 0.9rem; /* Reduced font-size */
+            display: inline-flex;
+             align-items: center;
+             justify-content: center;
         }
         
           #download-btn:hover {
-              background: #27ae60;
+              background: #444; /* Slightly lighter grey */
         }
 
         .examples {
-            margin-top: 1.5rem;
-            color: #eee; /* Light grey text */
+            margin-top: 1.2rem; /* Reduced margin */
+            color: #ddd; /* Light grey text */
+             font-size: 0.9rem; /* Reduced font-size */
         }
         
         .examples p {
-            margin-bottom: 0.5rem;
-             font-size: 1.1rem;
+            margin-bottom: 0.3rem; /* Reduced margin */
+             font-size: 1rem; /* Reduced font-size */
         }
 
         .example-prompt {
             display: inline-block;
-             margin: 0.4rem 0.2rem;
-             padding: 0.4rem 0.8rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-             cursor: pointer;
-             transition: background-color 0.3s ease;
-            font-size: 0.95rem;
+             margin: 0.2rem 0.1rem; /* Reduced margin */
+             padding: 0.3rem 0.6rem; /* Reduced padding */
+            background: rgba(255, 255, 255, 0.05); /* Lighter background */
+            border-radius: 4px; /* Reduced border-radius */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+             font-size: 0.85rem; /* Reduced font-size */
         }
         
           .example-prompt:hover {
-              background: rgba(255, 255, 255, 0.2);
+              background: rgba(255, 255, 255, 0.1); /* Slightly lighter background */
         }
 
 
         /* Responsive adjustments */
-        @media (max-width: 600px) {
-             .container {
-                padding: 1.5rem;
-                width: 95%;
+        @media (max-width: 450px) {
+            .container {
+                padding: 1.2rem;
+                 max-width: 90%; /* Full width on very small screens */
             }
-            .points-container {
-               padding: 1rem;
+             h1 {
+                  font-size: 1.5rem; /* Smaller heading */
+            }
+              .points-container {
+                   padding: 0.8rem; /* Smaller padding */
             }
             .points-container span, .watch-ad-btn {
+                font-size: 0.8rem; /* Smaller text */
+            }
+           .input-group input, .input-group button, #download-btn {
+               font-size: 0.8rem; /* Smaller text */
+            }
+              .examples p {
+                  font-size: 0.9rem;
+              }
+             .example-prompt {
+                   font-size: 0.8rem;
+              }
+            .fancy-spinner {
+                 width: 16px;
+                height: 16px;
+                margin-right: 6px;
+            }
+
+            .fancy-spinner div {
+                 width: 1.5px;
+                height: 6px;
+            }
+             .fancy-spinner {
+                transform-origin: 8px 8px;
+            }
+             .loading-text {
                  font-size: 0.9rem;
             }
-            .input-group input, .input-group button, #download-btn {
-                 font-size: 0.9rem;
-            }
-        }
-         @media (max-width: 400px) {
-             .points-container span, .watch-ad-btn {
-                 font-size: 0.8rem;
-            }
-            .input-group input, .input-group button, #download-btn {
-                 font-size: 0.8rem;
+            #error {
+                   font-size: 0.8rem;
             }
         }
     </style>
-      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -337,8 +368,8 @@
         }
 
         function checkPointsAndGenerate() {
-            if (userPoints >= 1) { // Changed from 4 to 1
-                userPoints -= 1; // Changed from 4 to 1
+            if (userPoints >= 1) {
+                userPoints -= 1;
                 localStorage.setItem('userPoints', userPoints);
                 updatePointsDisplay();
                 generateImage();
