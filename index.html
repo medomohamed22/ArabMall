@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Ai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
-        /* Resetting default styles */
+        /* Reset and global styles */
         * {
             margin: 0;
             padding: 0;
@@ -15,315 +16,244 @@
         }
 
         body {
-            background: #000; /* Black background */
+            background: linear-gradient(135deg, #000, #222);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px; /* Reduced padding */
             font-family: 'Tajawal', sans-serif;
+            color: #fff;
+            padding: 20px;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.05); /* Semi-transparent white */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px; /* Reduced border-radius */
-            padding: 1.8rem; /* Reduced padding */
-            width: 95%;
-            max-width: 500px; /* Reduced max-width */
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); /* Light box-shadow */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
         }
 
         h1 {
-            color: #fff; /* White heading */
-            margin-bottom: 1.2rem; /* Reduced margin */
-            font-size: 1.8rem; /* Reduced font-size */
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
         }
 
         .points-container {
-             background: rgba(255, 255, 255, 0.08); /* Lighter background */
-            padding: 1rem; /* Reduced padding */
-            border-radius: 8px; /* Reduced border-radius */
-            margin-bottom: 1.2rem; /* Reduced margin */
-            color: #ddd; /* Light grey text */
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        
-        .points-container span {
-            font-size: 1rem; /* Reduced font-size */
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
         }
 
         .watch-ad-btn {
-            background: #333; /* Dark grey background */
-            color: #fff; /* White text */
+            background: #444;
+            color: #fff;
             border: none;
-             padding: 0.6rem 1rem; /* Reduced padding */
-            border-radius: 5px; /* Reduced border-radius */
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-           font-size: 0.9rem; /* Reduced font-size */
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            transition: background 0.3s ease;
         }
 
         .watch-ad-btn:hover {
-            background: #444; /* Slightly lighter grey */
+            background: #666;
         }
 
         .watch-ad-btn:disabled {
-            background: #222; /* Even darker grey */
+            background: #222;
             cursor: not-allowed;
             opacity: 0.7;
         }
-        
-       .input-group {
-           display: flex;
-           margin-bottom: 1.2rem; /* Reduced margin */
+
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
-         .input-group input {
+        .input-group input {
             flex: 1;
-            padding: 0.6rem 0.8rem; /* Reduced padding */
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Lighter border */
-            border-radius: 5px 0 0 5px; /* Reduced border-radius */
-            background: rgba(255, 255, 255, 0.03); /* Lighter background */
-            color: #fff; /* White text */
-            font-size: 0.9rem; /* Reduced font-size */
-            text-align: right;
-             outline: none;
+            padding: 12px;
+            font-size: 1rem;
+            border: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
         }
 
-         .input-group button {
-             padding: 0.6rem 0.8rem; /* Reduced padding */
-             background: #2c2c2c; /* Dark grey */
-            color: #fff; /* White text */
+        .input-group button {
+            background: #555;
+            color: #fff;
             border: none;
-             border-radius: 0 5px 5px 0; /* Reduced border-radius */
+            padding: 12px 20px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-             font-size: 0.9rem; /* Reduced font-size */
-             display: inline-flex;
-            align-items: center;
-             justify-content: center;
+            font-size: 1rem;
+            transition: background 0.3s ease;
         }
 
         .input-group button:hover {
-             background: #3a3a3a; /* Slightly lighter grey */
+            background: #777;
         }
 
         #loading {
             display: none;
-            margin: 0.8rem auto; /* Reduced margin */
-            align-items: center;
+            margin-top: 20px;
         }
 
-        .fancy-spinner {
+         #loading .fancy-spinner {
             display: inline-block;
-             position: relative;
-             width: 20px; /* Reduced width */
-            height: 20px; /* Reduced height */
-            margin-right: 8px; /* Reduced margin */
+            width: 30px;
+            height: 30px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .fancy-spinner div {
-            animation: fancy-spinner-frame 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            transform-origin: 10px 10px; /* Reduced transform-origin */
-            background: #fff;
-            width: 2px; /* Reduced width */
-            height: 8px; /* Reduced height */
-            position: absolute;
-            border-radius: 1px; /* Reduced border-radius */
-             opacity: 0.8;
-        }
-        
-        .fancy-spinner div:nth-child(1) { transform: rotate(0deg); animation-delay: -1.1s; }
-        .fancy-spinner div:nth-child(2) { transform: rotate(30deg); animation-delay: -1.0s; }
-        .fancy-spinner div:nth-child(3) { transform: rotate(60deg); animation-delay: -0.9s; }
-        .fancy-spinner div:nth-child(4) { transform: rotate(90deg); animation-delay: -0.8s; }
-        .fancy-spinner div:nth-child(5) { transform: rotate(120deg); animation-delay: -0.7s; }
-        .fancy-spinner div:nth-child(6) { transform: rotate(150deg); animation-delay: -0.6s; }
-        .fancy-spinner div:nth-child(7) { transform: rotate(180deg); animation-delay: -0.5s; }
-        .fancy-spinner div:nth-child(8) { transform: rotate(210deg); animation-delay: -0.4s; }
-        .fancy-spinner div:nth-child(9) { transform: rotate(240deg); animation-delay: -0.3s; }
-        .fancy-spinner div:nth-child(10) { transform: rotate(270deg); animation-delay: -0.2s; }
-        .fancy-spinner div:nth-child(11) { transform: rotate(300deg); animation-delay: -0.1s; }
-        .fancy-spinner div:nth-child(12) { transform: rotate(330deg); animation-delay: 0s; }
-        
-        @keyframes fancy-spinner-frame {
-            0% { opacity: 1; }
-            100% { opacity: 0.1; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .loading-text {
-            color: #fff;
-            font-size: 1rem; /* Reduced font-size */
+        #loading .loading-text {
+           color: #fff;
+            font-size: 1rem;
             display: inline-block;
             vertical-align: middle;
+             margin-right: 10px;
+        }
+        .examples {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #aaa;
         }
 
-        #error {
-            color: #e74c3c;
-            font-size: 0.9rem; /* Reduced font-size */
-            margin: 0.8rem 0; /* Reduced margin */
+        .examples p {
+            margin-bottom: 10px;
+        }
+
+        .example-prompt {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+
+        .example-prompt:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         #result {
-            margin: 0.8rem 0; /* Reduced margin */
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin-top: 20px;
+            text-align: center;
         }
 
         .generated-image {
             max-width: 100%;
-            max-height: 300px; /* Reduced max-height */
-            border-radius: 6px; /* Reduced border-radius */
-            box-shadow: 0 3px 8px rgba(255, 255, 255, 0.08); /* Lighter box-shadow */
-             margin-bottom: 0.8rem; /* Reduced margin */
+             max-height: 350px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+              object-fit: contain;
         }
-        
-         #download-btn {
-            display: none;
-             background: #333;
+         #error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin: 0.8rem 0;
+        }
+          #success {
+            color: #2ecc71;
+            font-size: 0.9rem;
+            margin: 0.8rem 0;
+        }
+        #download-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #555;
             color: #fff;
             border: none;
-             padding: 0.6rem 1rem; /* Reduced padding */
-             border-radius: 5px; /* Reduced border-radius */
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-             margin-top: 0.8rem; /* Reduced margin */
-            font-size: 0.9rem; /* Reduced font-size */
-            display: inline-flex;
-             align-items: center;
+            font-size: 1rem;
+             display: inline-flex;
+            align-items: center;
              justify-content: center;
-        }
-        
-          #download-btn:hover {
-              background: #444; /* Slightly lighter grey */
+            transition: background 0.3s ease;
+            display: none;
         }
 
-        .examples {
-            margin-top: 1.2rem; /* Reduced margin */
-            color: #ddd; /* Light grey text */
-             font-size: 0.9rem; /* Reduced font-size */
-        }
-        
-        .examples p {
-            margin-bottom: 0.3rem; /* Reduced margin */
-             font-size: 1rem; /* Reduced font-size */
+        #download-btn:hover {
+            background: #777;
         }
 
-        .example-prompt {
-            display: inline-block;
-             margin: 0.2rem 0.1rem; /* Reduced margin */
-             padding: 0.3rem 0.6rem; /* Reduced padding */
-            background: rgba(255, 255, 255, 0.05); /* Lighter background */
-            border-radius: 4px; /* Reduced border-radius */
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-             font-size: 0.85rem; /* Reduced font-size */
-        }
-        
-          .example-prompt:hover {
-              background: rgba(255, 255, 255, 0.1); /* Slightly lighter background */
-        }
-
-
-        /* Responsive adjustments */
-        @media (max-width: 450px) {
-            .container {
-                padding: 1.2rem;
-                 max-width: 90%; /* Full width on very small screens */
-            }
-             h1 {
-                  font-size: 1.5rem; /* Smaller heading */
-            }
-              .points-container {
-                   padding: 0.8rem; /* Smaller padding */
-            }
-            .points-container span, .watch-ad-btn {
-                font-size: 0.8rem; /* Smaller text */
-            }
-           .input-group input, .input-group button, #download-btn {
-               font-size: 0.8rem; /* Smaller text */
-            }
-              .examples p {
-                  font-size: 0.9rem;
-              }
-             .example-prompt {
-                   font-size: 0.8rem;
-              }
-            .fancy-spinner {
-                 width: 16px;
-                height: 16px;
-                margin-right: 6px;
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
             }
 
-            .fancy-spinner div {
-                 width: 1.5px;
-                height: 6px;
+            .watch-ad-btn,
+            .input-group button,
+            #download-btn {
+                font-size: 0.9rem;
+                padding: 10px 15px;
             }
-             .fancy-spinner {
-                transform-origin: 8px 8px;
-            }
-             .loading-text {
-                 font-size: 0.9rem;
-            }
-            #error {
-                   font-size: 0.8rem;
+
+            .examples {
+                font-size: 0.9rem;
             }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <h1>Image Ai</h1>
         <div class="points-container">
             <span>النقاط المتوفرة: <span id="points">0</span></span>
-            <button id="watch-ad-btn" class="watch-ad-btn" onclick="watchAd()">مشاهدة إعلان (+4 نقاط)</button>
+            <button id="watch-ad-btn" class="watch-ad-btn"  title="شاهد إعلان لكسب 4 نقاط" onclick="watchAd()">مشاهدة إعلان (+4 نقاط)</button>
         </div>
         <div class="input-group">
             <input type="text" id="prompt" placeholder="اكتب وصفًا للصورة التي تريد إنشاءها باللغة الإنجليزية" dir="auto">
             <button id="generate-btn" onclick="checkPointsAndGenerate()">توليد صورة</button>
         </div>
         <div id="loading">
-            <div class="fancy-spinner">
-                <div></div>
-                <div></div>
-                   <div></div>
-                <div></div>
-                   <div></div>
-                <div></div>
-                   <div></div>
-                <div></div>
-                   <div></div>
-                <div></div>
-                   <div></div>
-                <div></div>
-            </div>
-            <div class="loading-text">...جاري إنشاء الصورة</div>
+            <div class="fancy-spinner"></div>
+              <div class="loading-text">...جاري إنشاء الصورة</div>
         </div>
-        <div id="error" class="error"></div>
+        <div id="success" class="success"></div>
+         <div id="error" class="error"></div>
         <div id="result"></div>
-        <button id="download-btn" onclick="downloadImage()" style="display: none;">تحميل الصورة</button>
-        
+         <button id="download-btn" onclick="downloadImage()">تحميل الصورة</button>
         <div class="examples">
             <p>أمثلة:</p>
             <span class="example-prompt" onclick="useExample(this)">Astronaut riding a horse</span>
-            <span class="example-prompt" onclick="useExample(this)">dog on the moon</span>
+             <span class="example-prompt" onclick="useExample(this)">dog on the moon</span>
             <span class="example-prompt" onclick="useExample(this)">Cat playing the piano</span>
         </div>
     </div>
-
-    <script>
+        <script>
         let currentImageUrl;
         let userPoints = 0;
-
+        let lastAdWatched = 0; // Timestamp of last ad watched
+        const adInterval = 300000; //5 minutes in milliseconds
         // Initialize Pi Network
         const Pi = window.Pi;
         Pi.init({ version: "2.0" });
@@ -335,16 +265,46 @@
                 userPoints = parseInt(savedPoints);
                 updatePointsDisplay();
             }
+           const savedTime = localStorage.getItem('pi_ad_datetime');
+            if(savedTime){
+               lastAdWatched = parseInt(savedTime);
+            }
+           updateAdButtonState();
+            
         });
+        
+         function updateAdButtonState() {
+            const now = new Date().getTime();
+             const timeSinceLastAd = now - lastAdWatched;
+              const watchAdButton = document.getElementById('watch-ad-btn');
+
+              if (timeSinceLastAd < adInterval) {
+                const remainingTime = Math.ceil((adInterval - timeSinceLastAd) / 1000);
+                 watchAdButton.disabled = true;
+                 watchAdButton.textContent = `انتظر ${remainingTime} ثواني`;
+                  setTimeout( () => {
+                     watchAdButton.disabled = false;
+                      watchAdButton.textContent = 'مشاهدة إعلان (+4 نقاط)';
+                  }, adInterval - timeSinceLastAd)
+                }
+            
+        }
 
         async function watchAd() {
+              const now = new Date().getTime();
+              const timeSinceLastAd = now - lastAdWatched;
+               if (timeSinceLastAd < adInterval) {
+                   updateAdButtonState();
+                   return;
+               }
             try {
+                const watchAdButton = document.getElementById('watch-ad-btn');
+                 watchAdButton.disabled = true;
+                watchAdButton.textContent = 'جاري تحميل الإعلان...';
                 const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
-                
-                if (isAdReadyResponse.ready === false) {
+                  if (isAdReadyResponse.ready === false) {
                     await Pi.Ads.requestAd("interstitial");
                 }
-                
                 const showAdResponse = await Pi.Ads.showAd("interstitial");
                 
                 if (showAdResponse.result == "AD_CLOSED") {
@@ -353,13 +313,26 @@
                     localStorage.setItem('userPoints', userPoints);
                     updatePointsDisplay();
                     
-                    // Store timestamp
-                    var d1 = new Date();
-                    var date1 = new Date(d1.getUTCFullYear(), d1.getUTCMonth(), d1.getUTCDate(), d1.getUTCHours(), d1.getUTCMinutes(), d1.getUTCSeconds());
-                    localStorage['pi_ad_datetime'] = date1.getTime();
+                     // Store timestamp
+                    lastAdWatched = new Date().getTime();
+                    localStorage['pi_ad_datetime'] = lastAdWatched;
+                    document.getElementById('success').textContent = 'تمت إضافة 4 نقاط بنجاح!';
+                    setTimeout(() => {
+                         document.getElementById('success').textContent = '';
+                    }, 3000);
+                    
+                     updateAdButtonState();
+                } else if (showAdResponse.result == "AD_ERROR") {
+                  document.getElementById('error').textContent = 'حدث خطأ أثناء تحميل الإعلان ، حاول مجدداً!';
+                  
                 }
             } catch (err) {
                 document.getElementById('error').textContent = 'Error showing ad: ' + err.message;
+                console.error('Error showing ad:', err)
+            } finally{
+                  const watchAdButton = document.getElementById('watch-ad-btn');
+                watchAdButton.disabled = false;
+                  watchAdButton.textContent = 'مشاهدة إعلان (+4 نقاط)';
             }
         }
 
@@ -429,13 +402,16 @@
             const generateBtn = document.getElementById('generate-btn');
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
+             const success = document.getElementById('success');
             const result = document.getElementById('result');
             const downloadBtn = document.getElementById('download-btn');
 
             generateBtn.disabled = true;
             loading.style.display = 'block';
             error.textContent = '';
+            success.textContent = '';
             downloadBtn.style.display = 'none';
+             result.innerHTML = '';
 
             try {
                 const imageBlob = await query({"inputs": prompt});
@@ -445,13 +421,17 @@
                 const img = document.createElement('img');
                 img.src = imageUrl;
                 img.className = 'generated-image';
-                
-                result.innerHTML = '';
+
                 result.appendChild(img);
-                downloadBtn.style.display = 'inline-block';
+                downloadBtn.style.display = 'inline-flex';
+                  document.getElementById('success').textContent = 'تم توليد الصورة بنجاح!';
+                    setTimeout(() => {
+                         document.getElementById('success').textContent = '';
+                    }, 3000);
             } catch (err) {
                 error.textContent = err.message;
                 console.error('Error generating image:', err);
+                downloadBtn.style.display = 'none';
             } finally {
                 generateBtn.disabled = false;
                 loading.style.display = 'none';
@@ -463,9 +443,14 @@
                 const a = document.createElement('a');
                 a.href = currentImageUrl;
                 a.download = 'generated-image.png';
+                a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+                document.getElementById('success').textContent = 'تم تحميل الصورة بنجاح!';
+                    setTimeout(() => {
+                         document.getElementById('success').textContent = '';
+                    }, 3000);
             }
         }
 
