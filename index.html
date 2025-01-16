@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Ai</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <style>
+        /* Previous styles remain the same */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* Add new styles for points system */
+        .points-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .watch-ad-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .watch-ad-btn:hover {
+            background: #45a049;
+        }
+
+        .watch-ad-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        /* Rest of the previous styles remain the same */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Ai</h1>
+        <div class="points-container">
+            <span>النقاط المتوفرة: <span id="points">0</span></span>
+            <button id="watch-ad-btn" class="watch-ad-btn" onclick="watchAd()">مشاهدة إعلان (+4 نقاط)</button>
+        </div>
+        <div class="input-group">
+            <input type="text" id="prompt" placeholder="Write a description of the image you want to create in English" dir="auto">
+            <button id="generate-btn" onclick="checkPointsAndGenerate()">Image generation</button>
+        </div>
+        <div id="loading">
+            <div class="fancy-spinner">
+                <div></div>
+                <div></div>
+            </div>
+            <div class="loading-text">...Create image</div>
+        </div>
+        <div id="error" class="error"></div>
+        <div id="result"></div>
+        <button id="download-btn" onclick="downloadImage()" style="display: none;">Download Image</button>
+        
+        <div class="examples">
+            <p>Examples:</p>
+            <span class="example-prompt" onclick="useExample(this)">Astronaut riding a horse</span>
+            <span class="example-prompt" onclick="useExample(this)">dog on the moon</span>
+            <span class="example-prompt" onclick="useExample(this)">Cat playing the piano</span>
+        </div>
+    </div>
+
+    <script>
+        let currentImageUrl;
+        let userPoints = 0;
+
+        // Initialize Pi Network
+        const Pi = window.Pi;
+        Pi.init({ version: "2.0" });
+
+        // Initialize points from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedPoints = localStorage.getItem('userPoints');
+            if (savedPoints) {
+                userPoints = parseInt(savedPoints);
+                updatePointsDisplay();
+            }
+        });
+
+        async function watchAd() {
+            try {
+                const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
+                
+                if (isAdReadyResponse.ready === false) {
+                    await Pi.Ads.requestAd("interstitial");
+                }
+                
+                const showAdResponse = await Pi.Ads.showAd("interstitial");
+                
+                if (showAdResponse.result == "AD_CLOSED") {
+                    // Add points after watching ad
+                    userPoints += 4;
+                    localStorage.setItem('userPoints', userPoints);
+                    updatePointsDisplay();
+                    
+                    // Store timestamp
+                    var d1 = new Date();
+                    var date1 = new Date(d1.getUTCFullYear(), d1.getUTCMonth(), d1.getUTCDate(), d1.getUTCHours(), d1.getUTCMinutes(), d1.getUTCSeconds());
+                    localStorage['pi_ad_datetime'] = date1.getTime();
+                }
+            } catch (err) {
+                document.getElementById('error').textContent = 'Error showing ad: ' + err.message;
+            }
+        }
+
+        function updatePointsDisplay() {
+            document.getElementById('points').textContent = userPoints;
+        }
+
+        function checkPointsAndGenerate() {
+            if (userPoints >= 4) {
+                userPoints -= 4;
+                localStorage.setItem('userPoints', userPoints);
+                updatePointsDisplay();
+                generateImage();
+            } else {
+                document.getElementById('error').textContent = 'تحتاج إلى 4 نقاط على الأقل لتوليد صورة. شاهد إعلانًا للحصول على نقاط!';
+            }
+        }
+
+        // Previous functions remain the same
+        async function query(data) {
+            try {
+                const response = await fetch(
+                    "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
+                    {
+                        headers: {
+                            Authorization: "Bearer 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",
+                            "Content-Type": "application/json",
+                        },
+                        method: "POST",
+                        body: JSON.stringify(data),
+                    }
+                );
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('API key error - Please verify the key');
+                    } else if (response.status === 503) {
+                        throw new Error('Model is loading, please try again shortly');
+                    } else if (response.status === 429) {
+                        throw new Error('Request limit exceeded, please try again later');
+                    } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Server error: ${response.status}`);
+                    }
+                }
+                
+                const result = await response.blob();
+                if (result.size === 0) {
+                    throw new Error('Image was not generated properly');
+                }
+                return result;
+            } catch (error) {
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    throw new Error('Failed to connect to server - Check your internet connection');
+                }
+                throw error;
+            }
+        }
+
+        async function generateImage() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                document.getElementById('error').textContent = 'Please enter an image description';
+                return;
+            }
+
+            const generateBtn = document.getElementById('generate-btn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+            const downloadBtn = document.getElementById('download-btn');
+
+            generateBtn.disabled = true;
+            loading.style.display = 'block';
+            error.textContent = '';
+            downloadBtn.style.display = 'none';
+
+            try {
+                const imageBlob = await query({"inputs": prompt});
+                const imageUrl = URL.createObjectURL(imageBlob);
+                currentImageUrl = imageUrl;
+
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.className = 'generated-image';
+                
+                result.innerHTML = '';
+                result.appendChild(img);
+                downloadBtn.style.display = 'inline-block';
+            } catch (err) {
+                error.textContent = err.message;
+                console.error('Error generating image:', err);
+            } finally {
+                generateBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function downloadImage() {
+            if (currentImageUrl) {
+                const a = document.createElement('a');
+                a.href = currentImageUrl;
+                a.download = 'generated-image.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+
+        function useExample(element) {
+            const prompt = document.getElementById('prompt');
+            prompt.value = element.textContent;
+            checkPointsAndGenerate();
+        }
+
+        document.getElementById('prompt').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPointsAndGenerate();
+            }
+        });
+
+        // Initialize Pi authentication
+        async function auth() {
+            try {
+                const nativeFeaturesList = await Pi.nativeFeaturesList();
+                const adNetworkSupported = nativeFeaturesList.includes("ad_network");
+                
+                if(!adNetworkSupported) {
+                    alert("Update Pi Browser version, please.");
+                    return;
+                }
+                
+                const scopes = ['username', 'payments', 'wallet_address'];
+                function onIncompletePaymentFound(payment) {}; 
+
+                await Pi.authenticate(scopes, onIncompletePaymentFound);
+            } catch (err) {
+                document.getElementById('error').textContent = 'Error authenticating with Pi Network: ' + err.message;
+            }
+        }
+
+        // Call auth when page loads
+        auth();
+    </script>
+</body>
+</html>
