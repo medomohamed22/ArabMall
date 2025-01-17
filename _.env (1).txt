@@ -1,0 +1,14 @@
+// .env
+SESSION_SECRET=your_random_secret_string_here
+PI_API_KEY=26lhoe5x0uzw5karnmxm7lh6vu7xgsegmxnzddlw1skkrj7gyqyli8byxsukohia
+PLATFORM_API_URL=https://api.minepi.com
+MONGO_HOST=localhost:27017
+MONGODB_DATABASE_NAME=demoapp-development
+MONGODB_USERNAME=demoapp
+MONGODB_PASSWORD=dev_password
+FRONTEND_URL=http://localhost:3314
+
+
+
+  
+  
