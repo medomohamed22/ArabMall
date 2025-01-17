@@ -1,0 +1,55 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+// Get elements from the HTML
+const paymentButton = document.getElementById('payment-button') as HTMLButtonElement;
+const paymentStatusDiv = document.getElementById('payment-status') as HTMLDivElement;
+const amountInput = document.getElementById('amount') as HTMLInputElement;
+
+//access env variables
+const piApiKey = process.env.PI_API_KEY;
+const platformApiUrl = process.env.PLATFORM_API_URL;
+
+// Add event listener to the button
+paymentButton.addEventListener('click', initiatePayment);
+
+// Function to initiate payment
+async function initiatePayment() {
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount) || amount <= 0) {
+    paymentStatusDiv.textContent = "Please enter a valid amount.";
+    return;
+  }
+  paymentStatusDiv.textContent = "Processing payment...";
+
+  try {
+    //  add the backend processing here
+    const paymentResult = await simulateBackendPayment(amount);
+
+    if (paymentResult.success) {
+      paymentStatusDiv.textContent = "Payment successful";
+    } else {
+      paymentStatusDiv.textContent = "Payment failed: " + paymentResult.message;
+    }
+
+  } catch (error) {
+    console.error('Payment error:', error);
+    paymentStatusDiv.textContent = "An error occurred during payment.";
+  }
+}
+
+// Placeholder for your actual backend payment integration
+async function simulateBackendPayment(amount: number): Promise < { success: boolean;message ? : string; } > {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      //Simulate success or failure
+      const isSuccess = Math.random() > 0.2;
+      if (isSuccess) {
+        resolve({ success: true, message: `Successfully processed payment of ${amount}. PI Key is ${piApiKey} and URL is ${platformApiUrl}` });
+      } else {
+        resolve({ success: false, message: "Payment Simulation Failed" })
+      }
+    }, 1500) //Simulating an API delay
+
+  });
+}

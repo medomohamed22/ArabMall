@@ -1,0 +1,26 @@
+# Get this on the Pi Developer Portal (develop.pi in the Pi Browser)
+PI_API_KEY=26lhoe5x0uzw5karnmxm7lh6vu7xgsegmxnzddlw1skkrj7gyqyli8byxsukohia
+
+# Platform API
+PLATFORM_API_URL=https://api.minepi.com
+
+# Session secret
+SESSION_SECRET='pailot development secret'
+# Database credentials
+DATABASE_HOST=localhost
+DATABASE_TYPE=postgres
+DATABASE_USERNAME=pailot_development
+DATABASE_PASSWORD=password
+DATABASE_PORT=5432
+DATABASE_NAME=pailot_development
+
+#cloudinary keys
+#paste the keys here
+CLOUDINARY_NAME=YOUR_CLOUDINARY_NAME_HERE
+CLOUDINARY_API_KEY=YOUR_CLOUDINARY_API_KEY_HERE
+CLOUDINARY_API_SECRET=YOUR_CLOUDINARY_API_SECRET_HERE
+
+# Twilio keys
+TWILIO_ACCOUNT_SID=YOUR_TWILIO_ACCOUNT_SID_HERE
+TWILIO_AUTH_TOKEN=YOUR_TWILIO_AUTH_TOKEN_HERE
+TWILIO_OTP_VERIFICATION_SID=YOUR_TWILIO_OTP_VERIFICATION_SID_HERE
