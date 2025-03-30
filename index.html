@@ -1,250 +1,243 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة مدفوعات Pi Network</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat with AI</title>
+    <meta name="description" content="Chat with AI and earn points by watching ads" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-            direction: rtl;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
-        }
-        h1 {
-            color: #5545c2;
-            margin-bottom: 30px;
-        }
-        .product {
+            font-family: "Poppins", Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-        }
-        .product img {
-            width: 200px;
-            height: 200px;
-            object-fit: cover;
-            margin-bottom: 15px;
-        }
-        .product-info {
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #ece9e6, #ffffff);
             text-align: center;
-            margin-bottom: 20px;
+            margin: 0;
+            padding: 20px;
         }
-        .price {
+
+        .container {
+            background: linear-gradient(135deg, #ffffff, #f7f7f7);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 450px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #333;
             font-size: 24px;
-            font-weight: bold;
-            color: #5545c2;
-            margin: 10px 0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .pay-button {
-            background-color: #5545c2;
+
+        p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        button {
+            background: linear-gradient(135deg, #6200ea, #8339ea);
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
             font-size: 16px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #3700b3, #4a00b3);
+            transform: scale(1.1);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        textarea {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            font-size: 16px;
+            resize: none;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #chatOutput {
+            background: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            color: #333;
+            text-align: left;
+            overflow-y: auto;
+            max-height: 200px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-content h2 {
+            color: #6200ea;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content button {
+            background: #6200ea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            margin: 5px;
+            transition: background 0.3s ease;
         }
-        .pay-button:hover {
-            background-color: #443399;
-        }
-        .footer {
-            margin-top: 40px;
-            color: #666;
-            font-size: 14px;
-        }
-        .payment-status {
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-            background-color: #f0f0f0;
-            display: none;
-        }
-        .payment-status.success {
-            background-color: #d4edda;
-            color: #155724;
-            display: block;
-        }
-        .payment-status.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-        .payment-status.pending {
-            background-color: #fff3cd;
-            color: #856404;
-            display: block;
+
+        .modal-content button:hover {
+            background: #3700b3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>متجر Pi Network</h1>
-        
-        <div class="product">
-            <img src="/api/placeholder/400/320" alt="منتج">
-            <div class="product-info">
-                <h2>منتج رائع</h2>
-                <p>هذا المنتج الرائع متاح للشراء باستخدام عملة Pi الرقمية.</p>
-                <div class="price">5 π</div>
-            </div>
-            <button id="payWithPi" class="pay-button">ادفع باستخدام Pi</button>
-        </div>
-        
-        <div id="payment-status" class="payment-status"></div>
-        
-        <div class="footer">
-            <p>جميع المدفوعات تتم معالجتها بشكل آمن عبر شبكة Pi Network</p>
+        <h2>Chat with AI</h2>
+        <textarea id="chatInput" rows="4" placeholder="Type your message..."></textarea>
+        <button id="sendButton">Send</button>
+        <p>Points: <span id="points">0</span></p>
+        <button id="watchAdButton">Watch Ad for Points</button>
+        <div id="chatOutput"></div>
+    </div>
+
+    <div id="pointsModal" class="modal">
+        <div class="modal-content">
+            <h2> Your points have run out.!</h2>
+            <p>You can watch an ad to get more points and continue chatting.</p>
+            <button onclick="closeModal()">closing</button>
+            <button onclick="watchAd()"> Watch the Ad</button>
         </div>
     </div>
 
-    <!-- Pi Network SDK -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // تهيئة Pi SDK مع مفتاح API
-            const Pi = window.Pi;
-            const apiKey = "dpmopijgtltrtr3dvlrhvvzwj3r5tzrkah4susl2xr65djqah2aaeft1btonafck";
-            
-            // تهيئة SDK مع المفتاح
-            Pi.init({ 
-                version: "2.0", 
-                sandbox: true,
-                apiKey: apiKey
+        const apiKey = "AIzaSyBbRnH6zZsKyQMbxIg7thGKCappZsJl5GI";
+        const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+        let points = localStorage.getItem("points") || 0;
+        document.getElementById("points").innerText = points;
+
+        document.getElementById("sendButton").addEventListener("click", sendMessage);
+        document.getElementById("watchAdButton").addEventListener("click", watchAd);
+
+        function showPointsModal() {
+            const modal = document.getElementById("pointsModal");
+            modal.style.display = "flex";
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("pointsModal");
+            modal.style.display = "none";
+        }
+
+        async function sendMessage() {
+            if (points <= 0) {
+                showPointsModal();
+                return;
+            }
+            points--;
+            localStorage.setItem("points", points);
+            document.getElementById("points").innerText = points;
+
+            const message = document.getElementById("chatInput").value;
+            const response = await fetch(apiUrl + "?key=" + apiKey, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
             });
-            
-            // استمع لأحداث الزر
-            document.getElementById('payWithPi').addEventListener('click', function() {
-                makePayment();
-            });
-            
-            // دالة إجراء المدفوعات
-            async function makePayment() {
+            const data = await response.json();
+            document.getElementById("chatOutput").innerText = data.candidates[0].content.parts[0].text;
+        }
+
+        function watchAd() {
+            async function showPiAds(Pi) {
                 try {
-                    updatePaymentStatus("جاري تحضير عملية الدفع...", "pending");
-                    
-                    // تسجيل الدخول باستخدام Pi
-                    const authResponse = await Pi.authenticate(['payments'], onIncompletePaymentFound);
-                    const user = authResponse.user;
-                    
-                    updatePaymentStatus("تم تسجيل الدخول كـ " + user.username + ". جاري إنشاء معاملة دفع...", "pending");
-                    
-                    const paymentData = {
-                        amount: 5,
-                        memo: "شراء منتج رائع",
-                        metadata: { 
-                            orderId: "ORDER_" + Math.floor(Math.random() * 1000000),
-                            userId: user.uid,
-                            timestamp: new Date().toISOString()
-                        }
-                    };
-                    
-                    // إنشاء معاملة دفع
-                    const payment = await Pi.createPayment(paymentData);
-                    
-                    // التحقق من المعاملة وإكمالها
-                    const paymentId = payment.identifier;
-                    updatePaymentStatus("تم إنشاء معاملة دفع بنجاح. رقم المعاملة: " + paymentId + ". جاري التحقق...", "pending");
-                    
-                    // إرسال المعاملة للخادم للتحقق منها (هذا سيكون مرتبط بخادم backend حقيقي)
-                    // في بيئة حقيقية، ستحتاج إلى معالجة هذا بواسطة خادم backend
-                    
-                    // محاكاة استدعاء API لتأكيد الدفع
-                    simulateApiCall(paymentId, apiKey)
-                        .then(response => {
-                            if (response.success) {
-                                updatePaymentStatus("تمت عملية الدفع بنجاح! رقم المعاملة: " + paymentId, "success");
-                            } else {
-                                updatePaymentStatus("فشلت عملية الدفع: " + response.message, "error");
-                            }
-                        })
-                        .catch(error => {
-                            updatePaymentStatus("حدث خطأ أثناء معالجة الدفع: " + error.message, "error");
-                        });
-                    
-                } catch (error) {
-                    updatePaymentStatus("حدث خطأ: " + error.message, "error");
-                    console.error(error);
+                    const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
+                    if (!isAdReadyResponse.ready) await Pi.Ads.requestAd("interstitial");
+                    const showAdResponse = await Pi.Ads.showAd("interstitial");
+                    if (showAdResponse.result === "AD_CLOSED") {
+                        points += 5;
+                        localStorage.setItem("points", points);
+                        document.getElementById("points").innerText = points;
+                    }
+                } catch (err) {
+                    console.error("Ad Error:", err);
                 }
             }
-            
-            // محاكاة استدعاء API (في البيئة الحقيقية، سيكون هذا طلبًا إلى خادم backend)
-            function simulateApiCall(paymentId, apiKey) {
-                return new Promise((resolve, reject) => {
-                    console.log("إرسال طلب تحقق من الدفع للخادم باستخدام المفتاح: " + apiKey);
-                    console.log("رقم معاملة الدفع: " + paymentId);
-                    
-                    // محاكاة تأخير الشبكة
-                    setTimeout(() => {
-                        // 90% فرصة نجاح للمحاكاة
-                        if (Math.random() < 0.9) {
-                            resolve({
-                                success: true,
-                                paymentId: paymentId,
-                                message: "تمت معالجة الدفع بنجاح"
-                            });
-                        } else {
-                            reject({
-                                success: false,
-                                message: "فشل التحقق من الدفع"
-                            });
-                        }
-                    }, 2000);
-                });
-            }
-            
-            // معالج للمدفوعات غير المكتملة
-            function onIncompletePaymentFound(payment) {
-                updatePaymentStatus("وجدنا معاملة غير مكتملة. رقم المعاملة: " + payment.identifier + ". جاري المعالجة...", "pending");
-                console.log("معاملة غير مكتملة:", payment);
-                
-                // في البيئة الحقيقية، ستتحقق من حالة هذه المعاملة على الخادم الخاص بك
-                // وإما إكمالها أو إلغائها
-                
-                // محاكاة استكمال المعاملة غير المكتملة
-                simulateApiCall(payment.identifier, apiKey)
-                    .then(response => {
-                        if (response.success) {
-                            updatePaymentStatus("تم استكمال المعاملة غير المكتملة بنجاح!", "success");
-                        } else {
-                            updatePaymentStatus("فشل استكمال المعاملة غير المكتملة: " + response.message, "error");
-                        }
-                    })
-                    .catch(error => {
-                        updatePaymentStatus("حدث خطأ أثناء معالجة المعاملة غير المكتملة: " + error.message, "error");
-                    });
-            }
-            
-            // تحديث حالة الدفع في واجهة المستخدم
-            function updatePaymentStatus(message, status) {
-                const statusElement = document.getElementById('payment-status');
-                statusElement.textContent = message;
-                
-                // إزالة جميع الفئات السابقة
-                statusElement.classList.remove('success', 'error', 'pending');
-                
-                // إضافة الفئة المناسبة
-                if (status) {
-                    statusElement.classList.add(status);
+
+            async function auth() {
+                try {
+                    const Pi = window.Pi;
+                    Pi.init({ version: "2.0" });
+                    const nativeFeaturesList = await Pi.nativeFeaturesList();
+                    if (!nativeFeaturesList.includes("ad_network")) {
+                        alert("Update Pi Browser version.");
+                        return;
+                    }
+                    Pi.authenticate(["username", "payments", "wallet_address"]).then(() => {
+                        showPiAds(Pi);
+                    }).catch(console.error);
+                } catch (err) {
+                    alert(err);
                 }
             }
-        });
+            auth();
+        }
     </script>
 </body>
 </html>
