@@ -48,7 +48,6 @@
             color: #666;
             font-size: 18px;
             line-height: 1.6;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         button {
@@ -152,9 +151,9 @@
     <div class="container">
         <h2>Chat with AI</h2>
         <textarea id="chatInput" rows="4" placeholder="Type your message..."></textarea>
-        <button onclick="sendMessage()">Send</button>
+        <button id="sendButton">Send</button>
         <p>Points: <span id="points">0</span></p>
-        <button onclick="watchAd()">Watch Ad for Points</button>
+        <button id="watchAdButton">Watch Ad for Points</button>
         <div id="chatOutput"></div>
     </div>
 
@@ -172,6 +171,9 @@
         const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
         let points = localStorage.getItem("points") || 0;
         document.getElementById("points").innerText = points;
+
+        document.getElementById("sendButton").addEventListener("click", sendMessage);
+        document.getElementById("watchAdButton").addEventListener("click", watchAd);
 
         function showPointsModal() {
             const modal = document.getElementById("pointsModal");
@@ -199,7 +201,7 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
             });
             const data = await response.json();
-            document.getElementById("chatOutput").innerText = data.candidates[].content.parts[0].text;
+            document.getElementById("chatOutput").innerText = data.candidates[0].content.parts[0].text;
         }
 
         function watchAd() {
