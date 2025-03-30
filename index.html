@@ -70,7 +70,7 @@
               });
             },
             onReadyForServerCompletion: function(paymentId, txid) {
-              $.post("server.php", {
+              $.post("server.js", {
                 'action': 'complete',
                 'paymentId': paymentId,
                 "txid": txid,
