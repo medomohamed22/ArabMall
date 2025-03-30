@@ -1,79 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مدفوعات Pi Network</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script>
-    // مفتاح API الخاص بـ Pi Network
-    const API_KEY = "wbegvil1tpnoi8o2tkieob8e5c1aluxmsit83kh6wyocipcmsw283j7fhfwebjuv";
-
-    async function createPayment(productId, amount, memo) {
-      try {
-        // إرسال طلب إلى Pi Network لإنشاء دفعة
-        const response = await fetch("https://api.minepi.com/v2/payments", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Key ${API_KEY}`,
-          },
-          body: JSON.stringify({
-            amount: amount,
-            memo: memo,
-            metadata: { productId: productId },
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          return data.paymentId; // معرف الدفع المُنشأ
-        } else {
-          const errorData = await response.json();
-          console.error("Error creating payment:", errorData);
-          alert("فشل إنشاء الدفع، تحقق من البيانات.");
-          return null;
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("خطأ أثناء إنشاء الدفع.");
-        return null;
-      }
-    }
-
-    async function approvePayment(paymentId) {
-      try {
-        // إرسال طلب الموافقة على الدفع
-        const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
-          method: "POST",
-          headers: {
-            Authorization: `Key ${API_KEY}`,
-          },
-        });
-
-        if (response.ok) {
-          alert(`تمت الموافقة على الدفع: ${paymentId}`);
-        } else {
-          const errorData = await response.json();
-          console.error("Error approving payment:", errorData);
-          alert("فشل الموافقة على الدفع.");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("حدث خطأ أثناء الموافقة على الدفع.");
-      }
-    }
+    const appId = "wbegvil1tpnoi8o2tkieob8e5c1aluxmsit83kh6wyocipcmsw283j7fhfwebjuv"; // ضع معرف التطبيق الخاص بك هنا
+    const pi = window.Pi;
 
     async function handlePayment() {
-      const productId = "12345"; // معرف المنتج
-      const amount = 10; // المبلغ بالدولار
-      const memo = "Purchase Item"; // وصف الدفعة
+      try {
+        // تسجيل الدخول إلى Pi Network
+        const scopes = ['payments'];
+        const auth = await pi.authenticate(scopes);
+        console.log("Authenticated as:", auth.user.username);
 
-      // إنشاء الدفع
-      const paymentId = await createPayment(productId, amount, memo);
+        // إنشاء الدفعة
+        const paymentData = {
+          amount: 10, // المبلغ بـ Pi
+          memo: "شراء منتج", 
+          metadata: { productId: "12345" },
+        };
 
-      if (paymentId) {
-        // الموافقة على الدفع إذا تم إنشاؤه بنجاح
-        await approvePayment(paymentId);
+        pi.createPayment(paymentData, {
+          onReadyForServerApproval: (paymentId) => {
+            console.log("Ready for approval:", paymentId);
+          },
+          onReadyForServerCompletion: (paymentId) => {
+            console.log("Ready for completion:", paymentId);
+          },
+          onCancel: (paymentId) => {
+            console.log("Payment cancelled:", paymentId);
+          },
+          onError: (error) => {
+            console.error("Payment error:", error);
+          },
+        });
+      } catch (error) {
+        console.error("Authentication error:", error);
       }
     }
   </script>
