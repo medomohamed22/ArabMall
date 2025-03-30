@@ -1,96 +1,61 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Pi Example</title>
-  <meta name="viewport" content="width=device-width, user-scalable=yes">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-</head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مدفوعات Pi Network</title>
+  <script>
+    async function initiatePayment() {
+      const paymentData = {
+        productId: "12345", // معرف المنتج
+        amount: 10, // المبلغ بالدولار
+        memo: "Purchase Item",
+      };
 
-<body>
-  <div class="container form-group text-center">
-    <input id="pi_donate" name="pi_donate" class="form-text" type="number" min="0" step="0.01" lang="en-US" />
-    <input id="button_click" name="button_click" value="Donate" type="button" class="btn btn-primary" />
-    <br /><br />
-    <a href="https://github.com/rockcesar/PiNetworkDevelopments/" target="_blank" class="btn btn-link">Watch code</a>
-  </div>
-  
-  <script type="text/javascript">
-    $(document).ready(function() {
-      const Pi = window.Pi;
-      Pi.init({ version: "2.0" });
-      
-      async function auth() {
-        try {
-          const scopes = ['username', 'payments', 'wallet_address'];
-          
-          function onIncompletePaymentFound(payment) {
-            $.post("server.php", {
-              'action': 'complete',
-              'paymentId': payment.identifier,
-              'txid': payment.transaction.txid,
-              'app_client': 'auth_example'
-            });
+      try {
+        // إرسال طلب لإنشاء دفعة
+        const createResponse = await fetch("http://localhost:8000/payments/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // للسماح باستخدام الكوكيز
+          body: JSON.stringify(paymentData),
+        });
+
+        const createResult = await createResponse.json();
+        if (createResponse.ok) {
+          const paymentId = createResult.paymentId; // استرجاع معرف الدفع
+
+          // تأكيد الدفع
+          const approveResponse = await fetch("http://localhost:8000/payments/approve", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ paymentId }),
+          });
+
+          const approveResult = await approveResponse.json();
+          if (approveResponse.ok) {
+            alert(`تمت الموافقة على الدفع: ${approveResult.message}`);
+          } else {
+            alert(`خطأ: ${approveResult.message}`);
           }
-          
-          Pi.authenticate(scopes, onIncompletePaymentFound).then(function(auth) {
-            $("#button_click").click(function() {
-              if (parseFloat($("#pi_donate").val()) > 0) {
-                $("#button_click").prop("disabled", true);
-                transfer();
-              }
-            });
-          }).catch(function(error) {
-            console.error(error);
-          });
-        } catch (err) {
-          alert(err);
+        } else {
+          alert(`خطأ في إنشاء الدفع: ${createResult.message}`);
         }
+      } catch (error) {
+        console.error("حدث خطأ أثناء معالجة الدفع:", error);
+        alert("حدث خطأ أثناء الدفع. يُرجى المحاولة لاحقًا.");
       }
-      
-      async function transfer() {
-        try {
-          const payment = Pi.createPayment({
-            amount: parseFloat($("#pi_donate").val()),
-            memo: "Demo transfer request",
-            metadata: { paymentType: "donation" }
-          }, {
-            onReadyForServerApproval: function(paymentId) {
-              $.post("server.js", {
-                'action': 'approve',
-                'paymentId': paymentId,
-                'app_client': 'auth_example'
-              }).fail(function() {
-                $("#button_click").prop("disabled", false);
-              });
-            },
-            onReadyForServerCompletion: function(paymentId, txid) {
-              $.post("server.js", {
-                'action': 'complete',
-                'paymentId': paymentId,
-                "txid": txid,
-                'app_client': 'auth_example'
-              }).fail(function() {
-                $("#button_click").prop("disabled", false);
-              });
-            },
-            onCancel: function() { $("#button_click").prop("disabled", false); },
-            onError: function() { $("#button_click").prop("disabled", false); }
-          });
-        } catch (err) {
-          $("#button_click").prop("disabled", false);
-          alert(err);
-        }
-      }
-      
-      auth();
-    });
+    }
   </script>
+</head>
+<body>
+  <h1>مدفوعات Pi Network</h1>
+  <p>اضغط على الزر أدناه للبدء في الدفع باستخدام Pi Network:</p>
+  <button onclick="initiatePayment()">ادفع الآن</button>
 </body>
-
 </html>
