@@ -85,8 +85,17 @@
         }
 
         #chatOutput {
-            color: #333;
+            background: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 100%;
+            max-width: 400px;
             margin-top: 20px;
+            color: #333;
+            text-align: left;
+            overflow-y: auto;
+            max-height: 200px;
         }
 
         .modal {
@@ -190,7 +199,7 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
             });
             const data = await response.json();
-            document.getElementById("chatOutput").innerText = data.candidates[0].content.parts[0].text;
+            document.getElementById("chatOutput").innerText = data.candidates[].content.parts[0].text;
         }
 
         function watchAd() {
