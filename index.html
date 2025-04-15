@@ -1,243 +1,700 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="auto">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat with AI</title>
-    <meta name="description" content="Chat with AI and earn points by watching ads" />
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <style>
-        body {
-            font-family: "Poppins", Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #ece9e6, #ffffff);
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat with AI</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #6c5ce7;
+      --primary-light: #a29bfe;
+      --primary-dark: #5641e5;
+      --accent-color: #00cec9;
+      --bg-light: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+      --bg-dark: #121212;
+      --text-light: #2d3436;
+      --text-dark: #f5f6fa;
+      --container-light: rgba(255, 255, 255, 0.9);
+      --container-dark: rgba(32, 32, 32, 0.9);
+      --bubble-user: linear-gradient(135deg, #6c5ce7, #8c7ae6);
+      --bubble-ai: #f5f6fa;
+      --bubble-ai-dark: #2d3436;
+      --shadow-light: 0 10px 30px rgba(0, 0, 0, 0.1);
+      --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
 
-        .container {
-            background: linear-gradient(135deg, #ffffff, #f7f7f7);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.15);
-            width: 90%;
-            max-width: 450px;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .container:hover {
-            transform: translateY(-10px);
-            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2);
-        }
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: all 0.4s ease;
+    }
 
-        h2 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
 
-        p {
-            color: #666;
-            font-size: 18px;
-            line-height: 1.6;
-        }
+    .container {
+      background: var(--container-light);
+      padding: 30px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-light);
+      width: 90%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.4s ease;
+      backdrop-filter: blur(10px);
+    }
 
-        button {
-            background: linear-gradient(135deg, #6200ea, #8339ea);
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-size: 16px;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
+    body.dark-mode .container {
+      background: var(--container-dark);
+      box-shadow: var(--shadow-dark);
+    }
 
-        button:hover {
-            background: linear-gradient(135deg, #3700b3, #4a00b3);
-            transform: scale(1.1);
-        }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
 
-        button:active {
-            transform: scale(0.95);
-        }
+    .header h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
 
-        textarea {
-            width: 100%;
-            max-width: 400px;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            margin-bottom: 15px;
-            font-size: 16px;
-            resize: none;
-            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
-        }
+    body.dark-mode .header h2 {
+      color: var(--primary-light);
+    }
 
-        #chatOutput {
-            background: #f8f8f8;
-            border-radius: 10px;
-            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            width: 100%;
-            max-width: 400px;
-            margin-top: 20px;
-            color: #333;
-            text-align: left;
-            overflow-y: auto;
-            max-height: 200px;
-        }
+    #chatOutput {
+      background: rgba(240, 240, 240, 0.5);
+      padding: 20px;
+      border-radius: 18px;
+      margin-top: 10px;
+      height: 340px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      transition: all 0.4s ease;
+      scrollbar-width: thin;
+    }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
+    body.dark-mode #chatOutput {
+      background: rgba(50, 50, 50, 0.5);
+    }
 
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
+    #chatOutput::-webkit-scrollbar {
+      width: 6px;
+    }
 
-        .modal-content h2 {
-            color: #6200ea;
-            margin-bottom: 15px;
-        }
+    #chatOutput::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-        .modal-content p {
-            color: #333;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
+    #chatOutput::-webkit-scrollbar-thumb {
+      background-color: var(--primary-light);
+      border-radius: 10px;
+    }
 
-        .modal-content button {
-            background: #6200ea;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-            transition: background 0.3s ease;
-        }
+    .message {
+      padding: 12px 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+      border-radius: 18px;
+      font-size: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease-in-out;
+    }
 
-        .modal-content button:hover {
-            background: #3700b3;
-        }
-    </style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+      align-self: flex-end;
+      background: var(--bubble-user);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .ai-message {
+      align-self: flex-start;
+      background-color: var(--bubble-ai);
+      color: var(--text-light);
+      border-bottom-left-radius: 4px;
+    }
+
+    .ai-message ul {
+      padding-left: 20px;
+      margin: 5px 0;
+    }
+
+    .ai-message li {
+      margin-bottom: 5px;
+    }
+
+    body.dark-mode .ai-message {
+      background-color: rgba(55, 55, 55, 0.9);
+      color: var(--text-dark);
+    }
+
+    .typing-indicator {
+      align-self: flex-start;
+      display: flex;
+      gap: 5px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      background-color: rgba(200, 200, 200, 0.5);
+      backdrop-filter: blur(5px);
+      width: fit-content;
+      margin-top: 5px;
+    }
+
+    body.dark-mode .typing-indicator {
+      background-color: rgba(70, 70, 70, 0.5);
+    }
+
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      animation: blink 1.5s infinite ease-in-out;
+    }
+
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+      0%, 80%, 100% {
+        opacity: 0.2;
+        transform: scale(0.8);
+      }
+      40% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .input-container {
+      position: relative;
+      margin-top: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 16px 60px 16px 20px;
+      border-radius: 50px;
+      border: 2px solid transparent;
+      font-size: 15px;
+      background: rgba(240, 240, 240, 0.6);
+      color: var(--text-light);
+      resize: none;
+      height: 60px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--primary-color);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    body.dark-mode textarea {
+      background: rgba(60, 60, 60, 0.6);
+      color: var(--text-dark);
+    }
+
+    body.dark-mode textarea:focus {
+      background: rgba(80, 80, 80, 0.8);
+    }
+
+    #sendButton {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+    }
+
+    #sendButton:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .points-container {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .points {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      color: var(--primary-color);
+    }
+
+    body.dark-mode .points {
+      color: var(--primary-light);
+    }
+
+    .coin-icon {
+      font-size: 18px;
+      color: #fbc531;
+    }
+
+    #watchAdButton {
+      background: linear-gradient(135deg, #fa8231, #e84118);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(232, 65, 24, 0.3);
+    }
+
+    #watchAdButton:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(232, 65, 24, 0.4);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      animation: modalFadeIn 0.4s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    body.dark-mode .modal-content {
+      background: #2d3436;
+      color: white;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      color: var(--primary-color);
+    }
+
+    body.dark-mode .modal-content h2 {
+      color: var(--primary-light);
+    }
+
+    .modal-content p {
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .modal-content button {
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-content button.cancel {
+      background-color: #dfe6e9;
+      color: #636e72;
+    }
+
+    body.dark-mode .modal-content button.cancel {
+      background-color: #636e72;
+      color: #dfe6e9;
+    }
+
+    .modal-content button.watch {
+      background-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+    }
+
+    .modal-content button.watch:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .toggle-dark {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--primary-color);
+      color: white;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+    }
+
+    .toggle-dark:hover {
+      transform: rotate(30deg);
+    }
+
+    .app-version {
+      position: absolute;
+      bottom: 10px;
+      font-size: 12px;
+      color: rgba(45, 52, 54, 0.5);
+    }
+
+    body.dark-mode .app-version {
+      color: rgba(245, 246, 250, 0.5);
+    }
+
+    /* RTL Support */
+    [dir="rtl"] .user-message {
+      align-self: flex-end;
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 18px;
+    }
+
+    [dir="rtl"] .ai-message {
+      align-self: flex-start;
+      border-bottom-right-radius: 4px;
+      border-bottom-left-radius: 18px;
+    }
+
+    [dir="rtl"] #sendButton {
+      right: auto;
+      left: 10px;
+    }
+
+    [dir="rtl"] textarea {
+      padding: 16px 20px 16px 60px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Chat with AI</h2>
-        <textarea id="chatInput" rows="4" placeholder="Type your message..."></textarea>
-        <button id="sendButton">Send</button>
-        <p>Points: <span id="points">0</span></p>
-        <button id="watchAdButton">Watch Ad for Points</button>
-        <div id="chatOutput"></div>
+  <div class="toggle-dark" onclick="toggleDarkMode()">
+    <i class="fas fa-moon"></i>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h2>Chat with AI</h2>
+      <div id="languageToggle" onclick="toggleLanguage()">
+        <i class="fas fa-globe"></i>
+      </div>
     </div>
-
-    <div id="pointsModal" class="modal">
-        <div class="modal-content">
-            <h2> Your points have run out.!</h2>
-            <p>You can watch an ad to get more points and continue chatting.</p>
-            <button onclick="closeModal()">closing</button>
-            <button onclick="watchAd()"> Watch the Ad</button>
-        </div>
+    
+    <div id="chatOutput"></div>
+    
+    <div class="input-container">
+      <textarea id="chatInput" placeholder="Type your message..."></textarea>
+      <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
     </div>
+    
+    <div class="points-container">
+      <div class="points">
+        <i class="fas fa-coins coin-icon"></i>
+        <span id="points">0</span>
+      </div>
+      <button id="watchAdButton">
+        <i class="fas fa-play-circle"></i>
+        Watch Ad
+      </button>
+    </div>
+  </div>
 
-    <script>
-        const apiKey = "AIzaSyBbRnH6zZsKyQMbxIg7thGKCappZsJl5GI";
-        const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-        let points = localStorage.getItem("points") || 0;
-        document.getElementById("points").innerText = points;
+  <span class="app-version">v1.2.0</span>
 
-        document.getElementById("sendButton").addEventListener("click", sendMessage);
-        document.getElementById("watchAdButton").addEventListener("click", watchAd);
+  <div id="pointsModal" class="modal">
+    <div class="modal-content">
+      <h2>Points Depleted</h2>
+      <p>You need points to continue chatting with the AI. Watch a short ad to earn 5 points!</p>
+      <div class="modal-buttons">
+        <button class="cancel" onclick="closeModal()">Cancel</button>
+        <button class="watch" onclick="watchAd()">
+          <i class="fas fa-play-circle"></i> Watch Ad
+        </button>
+      </div>
+    </div>
+  </div>
 
-        function showPointsModal() {
-            const modal = document.getElementById("pointsModal");
-            modal.style.display = "flex";
+  <script>
+    const apiKey = "AIzaSyBbRnH6zZsKyQMbxIg7thGKCappZsJl5GI";
+    const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    let points = parseInt(localStorage.getItem("points")) || 5; // Start with 5 points
+    let isDarkMode = localStorage.getItem("darkMode") === "true";
+    let isRTL = false;
+    
+    // Initialize UI
+    document.getElementById("points").innerText = points;
+    if (isDarkMode) document.body.classList.add("dark-mode");
+    
+    // Check for RTL languages
+    function detectLanguage() {
+      const userLang = navigator.language || navigator.userLanguage;
+      const rtlLangs = ['ar', 'he', 'fa', 'ur'];
+      if (rtlLangs.some(lang => userLang.startsWith(lang))) {
+        setRTL(true);
+      }
+    }
+    
+    function setRTL(enable) {
+      isRTL = enable;
+      document.documentElement.setAttribute('dir', enable ? 'rtl' : 'ltr');
+      document.getElementById("chatInput").placeholder = enable ? "اكتب رسالتك..." : "Type your message...";
+    }
+    
+    function toggleLanguage() {
+      setRTL(!isRTL);
+    }
+    
+    // Event listeners
+    document.getElementById("sendButton").addEventListener("click", sendMessage);
+    document.getElementById("watchAdButton").addEventListener("click", watchAd);
+    document.getElementById("chatInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+      isDarkMode = document.body.classList.contains("dark-mode");
+      localStorage.setItem("darkMode", isDarkMode);
+      
+      const icon = document.querySelector(".toggle-dark i");
+      icon.className = isDarkMode ? "fas fa-sun" : "fas fa-moon";
+    }
+
+    function showPointsModal() {
+      document.getElementById("pointsModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("pointsModal").style.display = "none";
+    }
+
+    async function sendMessage() {
+      if (points <= 0) {
+        showPointsModal();
+        return;
+      }
+
+      const input = document.getElementById("chatInput");
+      const message = input.value.trim();
+      if (!message) return;
+
+      appendMessage(message, "user-message");
+      input.value = "";
+      input.focus();
+
+      points--;
+      localStorage.setItem("points", points);
+      document.getElementById("points").innerText = points;
+
+      const typingBubble = document.createElement("div");
+      typingBubble.className = "typing-indicator";
+      typingBubble.id = "typing";
+      typingBubble.innerHTML = "<span></span><span></span><span></span>";
+      document.getElementById("chatOutput").appendChild(typingBubble);
+      document.getElementById("chatOutput").scrollTop = document.getElementById("chatOutput").scrollHeight;
+
+      try {
+        const response = await fetch(apiUrl + "?key=" + apiKey, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
+        });
+
+        document.getElementById("typing").remove();
+
+        if (!response.ok) {
+          throw new Error("API request failed");
         }
 
-        function closeModal() {
-            const modal = document.getElementById("pointsModal");
-            modal.style.display = "none";
+        const data = await response.json();
+        let replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+        
+        if (replyText.includes('*') || replyText.includes('-') || replyText.includes('•')) {
+          const lines = replyText.replace(/[*\-•]\s*/g, "").split('\n').map(line => line.trim()).filter(Boolean);
+          replyText = "<ul>" + lines.map(line => `<li>${line}</li>`).join('') + "</ul>";
+          appendMessage(replyText, "ai-message", true);
+        } else {
+          appendMessage(replyText, "ai-message");
         }
+      } catch (error) {
+        document.getElementById("typing").remove();
+        appendMessage("Sorry, I encountered an error. Please try again later.", "ai-message");
+        console.error("Error:", error);
+      }
+    }
 
-        async function sendMessage() {
-            if (points <= 0) {
-                showPointsModal();
-                return;
-            }
-            points--;
+    function appendMessage(text, className, isHtml = false) {
+      const output = document.getElementById("chatOutput");
+      const bubble = document.createElement("div");
+      bubble.className = `message ${className}`;
+      bubble.innerHTML = isHtml ? text : text.replace(/\n/g, "<br>");
+      output.appendChild(bubble);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function watchAd() {
+      closeModal();
+      
+      async function showPiAds(Pi) {
+        try {
+          const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
+          if (!isAdReadyResponse.ready) {
+            await Pi.Ads.requestAd("interstitial");
+          }
+          
+          const showAdResponse = await Pi.Ads.showAd("interstitial");
+          if (showAdResponse.result === "AD_CLOSED") {
+            points += 5;
             localStorage.setItem("points", points);
             document.getElementById("points").innerText = points;
-
-            const message = document.getElementById("chatInput").value;
-            const response = await fetch(apiUrl + "?key=" + apiKey, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: message }] }] })
-            });
-            const data = await response.json();
-            document.getElementById("chatOutput").innerText = data.candidates[0].content.parts[0].text;
+            
+            // Show success message
+            const output = document.getElementById("chatOutput");
+            const notification = document.createElement("div");
+            notification.textContent = "🎉 You earned 5 points!";
+            notification.style.alignSelf = "center";
+            notification.style.backgroundColor = "rgba(108, 92, 231, 0.2)";
+            notification.style.padding = "8px 16px";
+            notification.style.borderRadius = "50px";
+            notification.style.marginTop = "10px";
+            notification.style.fontSize = "14px";
+            notification.style.animation = "fadeIn 0.3s ease-in-out";
+            output.appendChild(notification);
+            output.scrollTop = output.scrollHeight;
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+              notification.remove();
+            }, 3000);
+          }
+        } catch (err) {
+          console.error("Ad Error:", err);
+          appendMessage("Failed to load ad. Please try again later.", "ai-message");
         }
+      }
 
-        function watchAd() {
-            async function showPiAds(Pi) {
-                try {
-                    const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
-                    if (!isAdReadyResponse.ready) await Pi.Ads.requestAd("interstitial");
-                    const showAdResponse = await Pi.Ads.showAd("interstitial");
-                    if (showAdResponse.result === "AD_CLOSED") {
-                        points += 5;
-                        localStorage.setItem("points", points);
-                        document.getElementById("points").innerText = points;
-                    }
-                } catch (err) {
-                    console.error("Ad Error:", err);
-                }
-            }
-
-            async function auth() {
-                try {
-                    const Pi = window.Pi;
-                    Pi.init({ version: "2.0" });
-                    const nativeFeaturesList = await Pi.nativeFeaturesList();
-                    if (!nativeFeaturesList.includes("ad_network")) {
-                        alert("Update Pi Browser version.");
-                        return;
-                    }
-                    Pi.authenticate(["username", "payments", "wallet_address"]).then(() => {
-                        showPiAds(Pi);
-                    }).catch(console.error);
-                } catch (err) {
-                    alert(err);
-                }
-            }
-            auth();
+      async function auth() {
+        try {
+          const Pi = window.Pi;
+          Pi.init({ version: "2.0" });
+          const nativeFeaturesList = await Pi.nativeFeaturesList();
+          if (!nativeFeaturesList.includes("ad_network")) {
+            appendMessage("Please update Pi Browser to support ads.", "ai-message");
+            return;
+          }
+          
+          Pi.authenticate(["username", "payments", "wallet_address"]).then(() => {
+            showPiAds(Pi);
+          }).catch(err => {
+            console.error(err);
+            appendMessage("Authentication failed. Please try again.", "ai-message");
+          });
+        } catch (err) {
+          console.error(err);
+          points += 5; // For testing outside Pi Browser
+          localStorage.setItem("points", points);
+          document.getElementById("points").innerText = points;
+          appendMessage("Added 5 points in test mode.", "ai-message");
         }
-    </script>
+      }
+
+      auth();
+    }
+
+    // Initialize with welcome message
+    window.onload = function() {
+      detectLanguage();
+      setTimeout(() => {
+        appendMessage("Hello! I'm your smart assistant. How can I help you today", "ai-message");
+      }, 500);
+    };
+  </script>
 </body>
 </html>
