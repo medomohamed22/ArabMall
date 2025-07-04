@@ -4,7 +4,7 @@ const app = express();
 app.use(express.json());
 
 // استبدل بـ API Key بتاعك من موقع المطورين بتاع Pi
-const PI_API_KEY = 'your-pi-api-key';
+const PI_API_KEY = 'hl667nzicowctfd4bwiy2yl64xpn3ogxuhitkoydqixgprsprjw5plu32bhjpoxa';
 const PI_API_URL = 'https://api.minepi.com/v2';
 
 // تفعيل CORS عشان الواجهة الأمامية تقدر تتصل بالسيرفر
