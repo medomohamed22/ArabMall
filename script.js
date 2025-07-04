@@ -97,28 +97,6 @@ document.getElementById("toggle-lang").addEventListener("click", () => {
   displayCampaigns();
 });
 
-// دالة التحقق من KYC (مثال افتراضي - يجب تنفيذه في الخادم)
-async function checkKYCStatus(accessToken) {
-  try {
-    const response = await fetch("/api/check-kyc", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accessToken }),
-    });
-    if (!response.ok) throw new Error("KYC check failed");
-    const data = await response.json();
-    return data.isKYCVerified; // افترض أن الخادم يعيد { isKYCVerified: true/false }
-  } catch (error) {
-    console.error("KYC check error:", error);
-    Swal.fire({
-      title: currentLang === "ar" ? "خطأ" : "Error",
-      text: currentLang === "ar" ? "فشل التحقق من KYC" : "Failed to check KYC status",
-      icon: "error",
-    });
-    return false;
-  }
-}
-
 // دالة المصادقة
 async function authenticate() {
   const scopes = ["payments", "username"];
@@ -136,21 +114,6 @@ async function authenticate() {
       text: currentLang === "ar" ? `تمت المصادقة بنجاح، ${username}!` : `Authentication successful, ${username}!`,
       icon: "success",
     });
-
-    // التحقق من حالة KYC
-    const isKYCVerified = await checkKYCStatus(auth.accessToken);
-    if (!isKYCVerified) {
-      Swal.fire({
-        title: currentLang === "ar" ? "خطأ" : "Error",
-        text:
-          currentLang === "ar"
-            ? "يجب إكمال التحقق من الهوية (KYC) لإجراء التبرع"
-            : "You must complete KYC verification to make a donation",
-        icon: "error",
-      });
-      throw new Error("KYC verification required");
-    }
-
     return auth.accessToken;
   } catch (error) {
     console.error("Authentication error:", error);
@@ -176,7 +139,7 @@ async function initiatePayment(campaignId, amount) {
   }
 
   try {
-    const accessToken = await authenticate(); // التأكد من المصادقة وKYC
+    const accessToken = await authenticate(); // التأكد من المصادقة
     const paymentData = {
       amount: Number(amount), // التأكد من أن المبلغ رقم
       memo: `تبرع لحملة ${campaignId}`,
@@ -241,7 +204,7 @@ async function initiatePayment(campaignId, amount) {
       },
       onCancel: () => {
         Swal.fire({
-          title: currentLang === "ar" ? "إلغاء" : "Cancelled",
+          title: currentLang === "ar" ? "إلغاء" : "Info",
           text: currentLang === "ar" ? "تم إلغاء عملية التبرع" : "Donation was cancelled",
           icon: "info",
         });
