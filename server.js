@@ -1,68 +1,63 @@
 const express = require('express');
 const axios = require('axios');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-
 const app = express();
-const port = 3314;
+app.use(express.json());
 
-// استخدم المفتاح الذي تجده في بوابة المطورين الخاصة بك
-// هام: لا تشارك هذا المفتاح أبدًا واحفظه في متغيرات البيئة في تطبيق حقيقي
-const PI_API_KEY = 'YOUR_PI_API_KEY'; // <--- ضع مفتاح الـ API الخاص بك هنا
+// استبدل بـ API Key بتاعك من موقع المطورين بتاع Pi
+const PI_API_KEY = 'your-pi-api-key';
+const PI_API_URL = 'https://api.minepi.com/v2';
 
-app.use(cors()); // للسماح بالطلبات من الواجهة الأمامية
-app.use(bodyParser.json());
+// تفعيل CORS عشان الواجهة الأمامية تقدر تتصل بالسيرفر
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
-const PI_API_URL = 'https://api.minepi.com/v2/payments';
-
-// Endpoint للموافقة على الدفع من جانب الخادم
+// الموافقة على الدفع
 app.post('/approve', async (req, res) => {
     const { paymentId } = req.body;
-    console.log(`الموافقة على الدفع: ${paymentId}`);
-
     try {
-        await axios.post(
-            `${PI_API_URL}/${paymentId}/approve`,
+        const response = await axios.post(
+            `${PI_API_URL}/payments/${paymentId}/approve`,
             {},
-            { headers: { 'Authorization': `Key ${PI_API_KEY}` } }
+            { headers: { Authorization: `Key ${PI_API_KEY}` } }
         );
-        console.log(`تمت الموافقة على الدفع بنجاح: ${paymentId}`);
-        res.status(200).json({ message: 'Approved' });
+        console.log(`تمت الموافقة على الدفع ${paymentId}:`, response.data);
+        res.json({ success: true, paymentId });
     } catch (error) {
-        console.error('خطأ في الموافقة:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Failed to approve payment' });
+        console.error(`خطأ في الموافقة على الدفع ${paymentId}:`, error.message);
+        res.status(500).json({ error: 'فشل الموافقة على الدفع' });
     }
 });
 
-// Endpoint لإكمال الدفع من جانب الخادم
+// إكمال الدفع
 app.post('/complete', async (req, res) => {
     const { paymentId, txid } = req.body;
-    console.log(`إكمال الدفع: ${paymentId} مع TXID: ${txid}`);
-
     try {
-        await axios.post(
-            `${PI_API_URL}/${paymentId}/complete`,
+        const response = await axios.post(
+            `${PI_API_URL}/payments/${paymentId}/complete`,
             { txid },
-            { headers: { 'Authorization': `Key ${PI_API_KEY}` } }
+            { headers: { Authorization: `Key ${PI_API_KEY}` } }
         );
-        console.log(`اكتمل الدفع بنجاح: ${paymentId}`);
-        // هنا يمكنك تحديث قاعدة البيانات الخاصة بك (مثلاً، وضع علامة على الطلب كـ "مدفوع")
-        res.status(200).json({ message: 'Completed' });
+        console.log(`تم إكمال الدفع ${paymentId}:`, response.data);
+        res.json({ success: true, paymentId, txid });
     } catch (error) {
-        console.error('خطأ في الإكمال:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Failed to complete payment' });
+        console.error(`خطأ في إكمال الدفع ${paymentId}:`, error.message);
+        res.status(500).json({ error: 'فشل إكمال الدفع' });
     }
 });
 
-// Endpoint لمعالجة المدفوعات غير المكتملة (اختياري ولكن موصى به)
-app.post('/incomplete', (req, res) => {
+// التعامل مع الدفعات غير المكتملة
+app.post('/incomplete', async (req, res) => {
     const { payment } = req.body;
-    console.log('تم استلام دفعة غير مكتملة:', payment);
-    // يمكنك هنا التحقق من حالة الدفع في قاعدة البيانات الخاصة بك وتحديد الإجراء التالي
-    res.status(200).json({ message: 'Incomplete payment noted' });
+    try {
+        console.log('التعامل مع دفع غير مكتمل:', payment);
+        res.json({ success: true, payment });
+    } catch (error) {
+        console.error('خطأ في التعامل مع دفع غير مكتمل:', error.message);
+        res.status(500).json({ error: 'فشل التعامل مع الدفع غير المكتمل' });
+    }
 });
 
-
-app.listen(port, () => {
-    console.log(`خادم Pi الخلفي يعمل على http://localhost:${port}`);
-});
+app.listen(3314, () => console.log('السيرفر يعمل على http://localhost:3314'));
