@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تجربة دفع شبكة Pi (محاكاة)</title>
+    <title>تجربة دفع شبكة Pi</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -68,7 +69,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>تجربة دفع شبكة Pi (محاكاة)</h1>
+        <h1>تجربة دفع شبكة Pi</h1>
         <div id="username">يرجى تسجيل الدخول</div>
         <input type="number" id="amount" placeholder="أدخل كمية Pi" min="0.01" step="0.01">
         <button id="payButton" onclick="makePayment()">إتمام الدفع</button>
@@ -77,6 +78,9 @@
     </div>
 
     <script>
+        // رابط السيرفر (غيره للرابط الحقيقي في الإنتاج)
+        const BACKEND_URL = 'http://localhost:3314'; // استبدل برابط الخادم الحقيقي (مثل https://your-server.com)
+
         // التأكد من تحميل Pi SDK
         if (typeof Pi === 'undefined') {
             document.getElementById('error').textContent = 'فشل تحميل Pi SDK. تحقق من الاتصال بالإنترنت';
@@ -90,26 +94,27 @@
         const scopes = ['username', 'payments'];
         function onIncompletePaymentFound(payment) {
             console.log("دفع غير مكتمل:", payment);
-            // محاكاة رد السيرفر للدفع غير المكتمل
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const mockResponse = { success: true, payment };
-                    console.log("محاكاة استجابة الدفع غير المكتمل:", mockResponse);
-                    resolve(mockResponse);
-                }, 1000); // تأخير وهمي لمحاكاة طلب السيرفر
-            });
+            return axios.post(`${BACKEND_URL}/incomplete`, { payment })
+                .then(response => {
+                    console.log("استجابة الدفع غير المكتمل:", response.data);
+                    return response.data;
+                })
+                .catch(error => {
+                    console.error("خطأ في الدفع غير المكتمل:", error.message);
+                    throw error;
+                });
         }
 
         Pi.authenticate(scopes, onIncompletePaymentFound)
             .then(auth => {
-                document.getElementById('username').textContent = `مرحبًا، ${auth.user.username}! جاهز لإجراء الدفعات (محاكاة)`;
+                document.getElementById('username').textContent = `مرحبًا، ${auth.user.username}! جاهز لإجراء الدفعات`;
             })
             .catch(error => {
                 document.getElementById('error').textContent = `فشل تسجيل الدخول: ${error.message}`;
                 console.error("خطأ في المصادقة:", error);
             });
 
-        // دالة إنشاء الدفع مع المحاكاة
+        // دالة إنشاء الدفع
         async function makePayment() {
             const button = document.getElementById('payButton');
             const errorDiv = document.getElementById('error');
@@ -135,7 +140,7 @@
             try {
                 const paymentData = {
                     amount: amount,
-                    memo: "دفع تجريبي (محاكاة)",
+                    memo: "دفع تجريبي",
                     metadata: { orderId: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` }
                 };
 
@@ -143,14 +148,9 @@
                     onReadyForServerApproval: async (paymentId) => {
                         statusDiv.textContent = 'جاري الموافقة على الدفع...';
                         try {
-                            // محاكاة رد السيرفر للموافقة
-                            await new Promise((resolve) => {
-                                setTimeout(() => {
-                                    console.log("محاكاة الموافقة لـ paymentId:", paymentId);
-                                    resolve({ success: true, paymentId });
-                                }, 1000); // تأخير وهمي
-                            });
-                            statusDiv.textContent = 'تمت الموافقة على الدفع! (محاكاة)';
+                            const response = await axios.post(`${BACKEND_URL}/approve`, { paymentId });
+                            console.log("تمت الموافقة:", response.data);
+                            statusDiv.textContent = 'تمت الموافقة على الدفع!';
                         } catch (error) {
                             errorDiv.textContent = `خطأ في الموافقة: ${error.message}`;
                             console.error("خطأ في الموافقة:", error);
@@ -159,14 +159,9 @@
                     onReadyForServerCompletion: async (paymentId, txid) => {
                         statusDiv.textContent = 'جاري إكمال الدفع...';
                         try {
-                            // محاكاة رد السيرفر للإكمال
-                            await new Promise((resolve) => {
-                                setTimeout(() => {
-                                    console.log("محاكاة الإكمال لـ paymentId:", paymentId, "txid:", txid);
-                                    resolve({ success: true, paymentId, txid });
-                                }, 1000); // تأخير وهمي
-                            });
-                            statusDiv.textContent = 'تم إكمال الدفع بنجاح! (محاكاة)';
+                            const response = await axios.post(`${BACKEND_URL}/complete`, { paymentId, txid });
+                            console.log("تم الإكمال:", response.data);
+                            statusDiv.textContent = 'تم إكمال الدفع بنجاح!';
                         } catch (error) {
                             errorDiv.textContent = `خطأ في الإكمال: ${error.message}`;
                             console.error("خطأ في الإكمال:", error);
