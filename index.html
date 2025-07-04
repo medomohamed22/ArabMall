@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi Network Payment Demo</title>
+    <title>تجربة دفع شبكة Pi</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>Pi.init({ version: "2.0" })</script>
@@ -17,6 +17,7 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            direction: rtl;
         }
         .container {
             background-color: white;
@@ -24,6 +25,8 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             text-align: center;
+            max-width: 90%;
+            width: 400px;
         }
         h1 {
             color: #333;
@@ -34,6 +37,7 @@
             width: 200px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            text-align: right;
         }
         button {
             padding: 10px 20px;
@@ -44,35 +48,51 @@
             cursor: pointer;
             font-size: 16px;
         }
-        button:hover {
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
             background-color: #45a049;
         }
-        #username {
+        #username, #error, #status {
             margin: 10px 0;
             font-weight: bold;
             color: #333;
         }
         #error {
             color: red;
-            margin-top: 10px;
+        }
+        #status {
+            color: blue;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Pi Network Payment Demo</h1>
+        <h1>تجربة دفع شبكة Pi</h1>
         <div id="username">يرجى تسجيل الدخول</div>
         <input type="number" id="amount" placeholder="أدخل كمية Pi" min="0.01" step="0.01">
-        <button onclick="makePayment()">إتمام الدفع</button>
+        <button id="payButton" onclick="makePayment()">إتمام الدفع</button>
+        <div id="status"></div>
         <div id="error"></div>
     </div>
 
     <script>
+        // رابط السيرفر (غيره للرابط الحقيقي في الإنتاج)
+        const BACKEND_URL = 'http://localhost:3314';
+
+        // التأكد من تحميل Pi SDK
+        if (typeof Pi === 'undefined') {
+            document.getElementById('error').textContent = 'فشل تحميل Pi SDK. تحقق من الاتصال بالإنترنت';
+            throw new Error('Pi SDK not loaded');
+        }
+
         // مصادقة المستخدم
         const scopes = ['username', 'payments'];
         function onIncompletePaymentFound(payment) {
             console.log("دفع غير مكتمل:", payment);
-            return axios.post("http://localhost:3314/incomplete", { payment })
+            return axios.post(`${BACKEND_URL}/incomplete`, { payment })
                 .then(response => {
                     console.log("استجابة الدفع غير المكتمل:", response.data);
                     return response.data;
@@ -88,58 +108,86 @@
                 document.getElementById('username').textContent = `مرحبًا، ${auth.user.username}! جاهز لإجراء الدفعات`;
             })
             .catch(error => {
-                document.getElementById('error').textContent = 'فشل تسجيل الدخول: ' + error.message;
+                document.getElementById('error').textContent = `فشل تسجيل الدخول: ${error.message}`;
                 console.error("خطأ في المصادقة:", error);
             });
 
-        // إنشاء الدفع
-        function makePayment() {
+        // دالة إنشاء الدفع
+        async function makePayment() {
+            const button = document.getElementById('payButton');
+            const errorDiv = document.getElementById('error');
+            const statusDiv = document.getElementById('status');
             const amountInput = document.getElementById('amount').value;
             const amount = parseFloat(amountInput);
-            const errorDiv = document.getElementById('error');
 
-            if (!amountInput || isNaN(amount) || amount <= 0) {
-                errorDiv.textContent = 'يرجى إدخال كمية صالحة من Pi';
+            // تنظيف الرسائل السابقة
+            errorDiv.textContent = '';
+            statusDiv.textContent = '';
+
+            // التحقق من المبلغ
+            if (!amountInput || isNaN(amount) || amount <= 0 || amount > 10000) {
+                errorDiv.textContent = 'يرجى إدخال كمية صالحة من Pi (بين 0.01 و 10000)';
                 return;
             }
 
-            const paymentData = {
-                amount: amount,
-                memo: "دفع تجريبي",
-                metadata: { orderId: `order_${Date.now()}` }
-            };
+            // تعطيل الزر وإظهار حالة التحميل
+            button.disabled = true;
+            button.textContent = 'جاري المعالجة...';
+            statusDiv.textContent = 'جاري إنشاء الدفع...';
 
-            Pi.createPayment(paymentData, {
-                onReadyForServerApproval: (paymentId) => {
-                    console.log("معرف الدفع:", paymentId);
-                    axios.post('http://localhost:3314/approve', { paymentId })
-                        .then(response => console.log("تمت الموافقة:", response.data))
-                        .catch(error => {
-                            errorDiv.textContent = 'خطأ في الموافقة: ' + error.message;
+            try {
+                const paymentData = {
+                    amount: amount,
+                    memo: "دفع تجريبي",
+                    metadata: { orderId: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` }
+                };
+
+                const payment = await Pi.createPayment(paymentData, {
+                    onReadyForServerApproval: async (paymentId) => {
+                        statusDiv.textContent = 'جاري الموافقة على الدفع...';
+                        try {
+                            const response = await axios.post(`${BACKEND_URL}/approve`, { paymentId });
+                            console.log("تمت الموافقة:", response.data);
+                            statusDiv.textContent = 'تمت الموافقة على الدفع!';
+                        } catch (error) {
+                            errorDiv.textContent = `خطأ في الموافقة: ${error.message}`;
                             console.error("خطأ في الموافقة:", error);
-                        });
-                },
-                onReadyForServerCompletion: (paymentId, txid) => {
-                    console.log("جاهز للإكمال:", paymentId, txid);
-                    axios.post('http://localhost:3314/complete', { paymentId, txid })
-                        .then(response => console.log("تم الإكمال:", response.data))
-                        .catch(error => {
-                            errorDiv.textContent = 'خطأ في الإكمال: ' + error.message;
+                        }
+                    },
+                    onReadyForServerCompletion: async (paymentId, txid) => {
+                        statusDiv.textContent = 'جاري إكمال الدفع...';
+                        try {
+                            const response = await axios.post(`${BACKEND_URL}/complete`, { paymentId, txid });
+                            console.log("تم الإكمال:", response.data);
+                            statusDiv.textContent = 'تم إكمال الدفع بنجاح!';
+                        } catch (error) {
+                            errorDiv.textContent = `خطأ في الإكمال: ${error.message}`;
                             console.error("خطأ في الإكمال:", error);
-                        });
-                },
-                onCancel: (paymentId) => {
-                    errorDiv.textContent = 'تم إلغاء الدفع';
-                    console.log("إلغاء الدفع:", paymentId);
-                },
-                onError: (error, payment) => {
-                    errorDiv.textContent = 'خطأ في الدفع: ' + error.message;
-                    console.log("خطأ:", error, payment);
-                }
-            }).catch(error => {
-                errorDiv.textContent = 'خطأ في إنشاء الدفع: ' + error.message;
+                        }
+                    },
+                    onCancel: (paymentId) => {
+                        errorDiv.textContent = 'تم إلغاء الدفع';
+                        console.log("إلغاء الدفع:", paymentId);
+                    },
+                    onError: (error, payment) => {
+                        let message = 'خطأ في الدفع';
+                        if (error.message.includes('network')) {
+                            message = 'فشل الاتصال بالخادم. يرجى المحاولة لاحقًا';
+                        } else if (error.message.includes('cancelled')) {
+                            message = 'تم إلغاء الدفع من قبل المستخدم';
+                        }
+                        errorDiv.textContent = message;
+                        console.error("خطأ:", error, payment);
+                    }
+                });
+            } catch (error) {
+                errorDiv.textContent = `خطأ في إنشاء الدفع: ${error.message}`;
                 console.error("خطأ في إنشاء الدفع:", error);
-            });
+            } finally {
+                // إعادة تفعيل الزر
+                button.disabled = false;
+                button.textContent = 'إتمام الدفع';
+            }
         }
     </script>
 </body>
