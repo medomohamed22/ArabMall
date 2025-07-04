@@ -6,8 +6,9 @@ app.use(express.json());
 // استبدل بـ API Key بتاعك من موقع المطورين بتاع Pi
 const PI_API_KEY = 'hl667nzicowctfd4bwiy2yl64xpn3ogxuhitkoydqixgprsprjw5plu32bhjpoxa';
 const PI_API_URL = 'https://api.minepi.com/v2';
+const VALID_APP_CLIENT = 'pi_payment_app'; // نفس القيمة المستخدمة في الواجهة الأمامية
 
-// إعدادات CORS عشان الواجهة الأمامية تتصل بالسيرفر
+// إعدادات CORS
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -15,10 +16,10 @@ app.use((req, res, next) => {
 });
 
 // نقطة نهاية الموافقة على الدفع
-app.post('/approve', async (req, res) => {
-    const { paymentId } = req.body;
-    if (!paymentId) {
-        return res.status(400).json({ error: 'paymentId مطلوب' });
+app.post('/pi/approve', async (req, res) => {
+    const { action, paymentId, app_client } = req.body;
+    if (action !== 'approve' || !paymentId || app_client !== VALID_APP_CLIENT) {
+        return res.status(400).json({ error: 'طلب غير صالح: تحقق من action أو paymentId أو app_client' });
     }
     try {
         const response = await axios.post(
@@ -35,10 +36,10 @@ app.post('/approve', async (req, res) => {
 });
 
 // نقطة نهاية إكمال الدفع
-app.post('/complete', async (req, res) => {
-    const { paymentId, txid } = req.body;
-    if (!paymentId || !txid) {
-        return res.status(400).json({ error: 'paymentId و txid مطلوبان' });
+app.post('/pi/complete', async (req, res) => {
+    const { action, paymentId, txid, app_client } = req.body;
+    if (action !== 'complete' || !paymentId || !txid || app_client !== VALID_APP_CLIENT) {
+        return res.status(400).json({ error: 'طلب غير صالح: تحقق من action أو paymentId أو txid أو app_client' });
     }
     try {
         const response = await axios.post(
@@ -55,15 +56,15 @@ app.post('/complete', async (req, res) => {
 });
 
 // نقطة نهاية التعامل مع الدفعات غير المكتملة
-app.post('/incomplete', async (req, res) => {
-    const { payment } = req.body;
-    if (!payment) {
-        return res.status(400).json({ error: 'payment مطلوب' });
+app.post('/pi/incomplete', async (req, res) => {
+    const { action, paymentId, app_client } = req.body;
+    if (action !== 'incomplete' || !paymentId || app_client !== VALID_APP_CLIENT) {
+        return res.status(400).json({ error: 'طلب غير صالح: تحقق من action أو paymentId أو app_client' });
     }
     try {
-        // هنا ممكن تضيف منطق للتعامل مع الدفعات غير المكتملة (مثل التسجيل أو إعادة المحاولة)
-        console.log('التعامل مع دفع غير مكتمل:', payment);
-        res.json({ success: true, payment });
+        // منطق التعامل مع الدفعات غير المكتملة (مثل التسجيل أو إعادة المحاولة)
+        console.log('التعامل مع دفع غير مكتمل:', { paymentId });
+        res.json({ success: true, paymentId });
     } catch (error) {
         console.error('خطأ في التعامل مع دفع غير مكتمل:', error.message);
         res.status(500).json({ error: 'فشل التعامل مع الدفع غير المكتمل' });
