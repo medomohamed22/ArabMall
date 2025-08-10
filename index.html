@@ -4,73 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>تبرعات بالـ Pi Network</title>
-
-  <!-- Pi Network SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
   <style>
-    body {
-      margin: 0;
-      background: #0f0b1a;
-      color: white;
-      font-family: "Segoe UI", "Noto Kufi Arabic", sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 20px;
-    }
-    .card {
-      background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 500px;
-      width: 100%;
-    }
-    h1 { text-align: center; }
-    .progress-wrap {
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      overflow: hidden;
-      height: 14px;
-      margin-top: 8px;
-    }
-    .progress {
-      height: 100%;
-      background: linear-gradient(90deg, #7c3aed, #5b21b6);
-      width: 0%;
-      transition: width .5s ease;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-    }
-    input { background: rgba(255,255,255,0.1); color: white; }
-    button {
-      background: linear-gradient(90deg, #7c3aed, #5b21b6);
-      color: white;
-      cursor: pointer;
-    }
-    .donations { margin-top: 20px; }
-    .donation {
-      background: rgba(255,255,255,0.05);
-      padding: 8px;
-      border-radius: 8px;
-      margin-bottom: 6px;
-      font-size: 14px;
-    }
+    body { margin:0; background:#0f0b1a; color:white; font-family:"Segoe UI","Noto Kufi Arabic",sans-serif; display:flex; justify-content:center; padding:20px; }
+    .card { background:rgba(255,255,255,0.03); border-radius:12px; padding:20px; max-width:500px; width:100%; }
+    h1 { text-align:center; }
+    .progress-wrap { background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; height:14px; margin-top:8px; }
+    .progress { height:100%; background:linear-gradient(90deg,#7c3aed,#5b21b6); width:0%; transition:width .5s ease; }
+    input,button { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:none; font-size:14px; }
+    input { background:rgba(255,255,255,0.1); color:white; }
+    button { background:linear-gradient(90deg,#7c3aed,#5b21b6); color:white; cursor:pointer; }
+    .donations { margin-top:20px; }
+    .donation { background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; margin-bottom:6px; font-size:14px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>حملة تبرعات بالـ Pi</h1>
     <div>الهدف: <strong id="goal">100</strong> PI</div>
-    <div class="progress-wrap">
-      <div class="progress" id="progress"></div>
-    </div>
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
     <div>تم جمع: <span id="collected">0</span> PI</div>
 
     <input type="text" id="name" placeholder="اسمك (اختياري)">
@@ -81,18 +33,16 @@
   </div>
 
   <script>
-    // ====== إعداد Pi SDK ======
-    Pi.init({ version: "2.0", sandbox: true }); // sandbox للتجربة
+    Pi.init({ version: "2.0", sandbox: true }); // ضع sandbox=false عند الانتاج
 
     const goal = 100;
     let collected = 0;
-    const donationsList = document.getElementById('donations');
     const progressBar = document.getElementById('progress');
+    const donationsList = document.getElementById('donations');
 
     function updateProgress() {
       document.getElementById('collected').textContent = collected.toFixed(2);
-      const percent = Math.min((collected / goal) * 100, 100);
-      progressBar.style.width = percent + "%";
+      progressBar.style.width = Math.min((collected / goal) * 100, 100) + "%";
     }
 
     async function authenticateUser() {
@@ -101,7 +51,6 @@
         const auth = await Pi.authenticate(scopes, (payment) => {
           console.log("معاملة غير مكتملة:", payment);
         });
-        console.log("تم تسجيل الدخول:", auth);
         return auth;
       } catch (err) {
         console.error("خطأ في تسجيل الدخول:", err);
@@ -109,53 +58,36 @@
     }
 
     async function createPayment(amount, memo) {
-      const paymentData = {
-        amount: amount,
-        memo: memo,
-        metadata: { type: "donation" }
-      };
-
+      const paymentData = { amount, memo, metadata: { type: "donation" } };
       const paymentCallbacks = {
-        onReadyForServerApproval: (paymentId) => {
-          console.log("جاهز للموافقة من السيرفر:", paymentId);
-          // هنا تبعت paymentId للسيرفر للموافقة
+        onReadyForServerApproval: async (paymentId) => {
+          await fetch('/approve_payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId })
+          });
         },
-        onReadyForServerCompletion: (paymentId, txid) => {
-          console.log("جاهز للإكمال:", paymentId, txid);
-          // هنا تكمل الدفع على السيرفر
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          await fetch('/complete_payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid })
+          });
         },
-        onCancel: () => {
-          console.log("تم إلغاء الدفع");
-        },
-        onError: (error) => {
-          console.error("خطأ في الدفع:", error);
-        }
+        onCancel: () => { console.log("تم إلغاء الدفع"); },
+        onError: (error) => { console.error("خطأ في الدفع:", error); }
       };
-
-      try {
-        const payment = await Pi.createPayment(paymentData, paymentCallbacks);
-        console.log("تم إنشاء الدفع:", payment);
-        return payment;
-      } catch (err) {
-        console.error("خطأ في إنشاء الدفع:", err);
-      }
+      return await Pi.createPayment(paymentData, paymentCallbacks);
     }
 
     document.getElementById('donateBtn').addEventListener('click', async () => {
       const name = document.getElementById('name').value || "متبرع مجهول";
       const amount = parseFloat(document.getElementById('amount').value);
-      if (!amount || amount <= 0) {
-        alert("أدخل مبلغ صحيح");
-        return;
-      }
+      if (!amount || amount <= 0) { alert("أدخل مبلغ صحيح"); return; }
 
-      // تسجيل الدخول
       await authenticateUser();
-
-      // إنشاء الدفع
       await createPayment(amount, `تبرع من ${name}`);
 
-      // تحديث الواجهة بشكل تجريبي
       collected += amount;
       const div = document.createElement('div');
       div.className = 'donation';
