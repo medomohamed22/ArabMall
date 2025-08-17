@@ -2,101 +2,72 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>تبرعات بالـ Pi Network</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تبرعات Pi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+  <!-- Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <style>
-    body { margin:0; background:#0f0b1a; color:white; font-family:"Segoe UI","Noto Kufi Arabic",sans-serif; display:flex; justify-content:center; padding:20px; }
-    .card { background:rgba(255,255,255,0.03); border-radius:12px; padding:20px; max-width:500px; width:100%; }
-    h1 { text-align:center; }
-    .progress-wrap { background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden; height:14px; margin-top:8px; }
-    .progress { height:100%; background:linear-gradient(90deg,#7c3aed,#5b21b6); width:0%; transition:width .5s ease; }
-    input,button { width:100%; padding:10px; margin-top:8px; border-radius:8px; border:none; font-size:14px; }
-    input { background:rgba(255,255,255,0.1); color:white; }
-    button { background:linear-gradient(90deg,#7c3aed,#5b21b6); color:white; cursor:pointer; }
-    .donations { margin-top:20px; }
-    .donation { background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; margin-bottom:6px; font-size:14px; }
-  </style>
+  <script>window.Pi && Pi.init({ version: "2.0", sandbox: location.hostname === 'localhost' });</script>
 </head>
 <body>
-  <div class="card">
-    <h1>حملة تبرعات بالـ Pi</h1>
-    <div>الهدف: <strong id="goal">100</strong> PI</div>
-    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
-    <div>تم جمع: <span id="collected">0</span> PI</div>
+  <header class="container header">
+    <div class="brand">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Pi_Coin_Logo.png" alt="Pi" class="logo"/>
+      <h1>منصّة التبرعات بـ Pi</h1>
+    </div>
+    <button id="loginBtn" class="btn primary">تسجيل الدخول</button>
+  </header>
 
-    <input type="text" id="name" placeholder="اسمك (اختياري)">
-    <input type="number" id="amount" placeholder="المبلغ بالـ PI" min="0.01" step="0.01">
-    <button id="donateBtn">تبرع الآن عبر Pi</button>
+  <main class="container grid">
+    <section class="card donate">
+      <h2>تبرّع بسهولة وأمان</h2>
+      <p class="muted">اختر قيمة سريعة أو أدخل مبلغًا مخصصًا</p>
 
-    <div class="donations" id="donations"></div>
-  </div>
+      <div class="presets" role="group" aria-label="خيارات سريعة">
+        <button class="chip" data-amt="0.1">0.1 π</button>
+        <button class="chip" data-amt="0.5">0.5 π</button>
+        <button class="chip" data-amt="1">1 π</button>
+        <button class="chip" data-amt="2">2 π</button>
+      </div>
 
-  <script>
-    Pi.init({ version: "2.0", sandbox: false }); // ضع sandbox=false عند الانتاج
+      <label class="field">
+        <span>المبلغ (π)</span>
+        <input id="amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثال: 0.25" />
+      </label>
 
-    const goal = 100;
-    let collected = 0;
-    const progressBar = document.getElementById('progress');
-    const donationsList = document.getElementById('donations');
+      <label class="field">
+        <span>ملاحظة (اختياري)</span>
+        <input id="memo" type="text" maxlength="80" placeholder="سبب التبرع" />
+      </label>
 
-    function updateProgress() {
-      document.getElementById('collected').textContent = collected.toFixed(2);
-      progressBar.style.width = Math.min((collected / goal) * 100, 100) + "%";
-    }
+      <button id="donateBtn" class="btn accent" disabled>
+        <span class="spinner" hidden></span>
+        <span class="btn-text">تبرّع الآن</span>
+      </button>
 
-    async function authenticateUser() {
-      try {
-        const scopes = ['payments'];
-        const auth = await Pi.authenticate(scopes, (payment) => {
-          console.log("معاملة غير مكتملة:", payment);
-        });
-        return auth;
-      } catch (err) {
-        console.error("خطأ في تسجيل الدخول:", err);
-      }
-    }
+      <div id="progress" class="progress" aria-hidden="true">
+        <div class="bar" style="width:0%"></div>
+      </div>
 
-    async function createPayment(amount, memo) {
-      const paymentData = { amount, memo, metadata: { type: "donation" } };
-      const paymentCallbacks = {
-        onReadyForServerApproval: async (paymentId) => {
-          await fetch('/approve_payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId })
-          });
-        },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          await fetch('/complete_payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid })
-          });
-        },
-        onCancel: () => { console.log("تم إلغاء الدفع"); },
-        onError: (error) => { console.error("خطأ في الدفع:", error); }
-      };
-      return await Pi.createPayment(paymentData, paymentCallbacks);
-    }
+      <div id="alerts" class="alerts" aria-live="polite"></div>
+    </section>
 
-    document.getElementById('donateBtn').addEventListener('click', async () => {
-      const name = document.getElementById('name').value || "متبرع مجهول";
-      const amount = parseFloat(document.getElementById('amount').value);
-      if (!amount || amount <= 0) { alert("أدخل مبلغ صحيح"); return; }
+    <aside class="card info">
+      <h3>لماذا Pi؟</h3>
+      <ul>
+        <li>دفع مباشر داخل Pi Browser</li>
+        <li>مصادقة آمنة عبر Pi SDK</li>
+        <li>تجربة سلسة على الجوال والكمبيوتر</li>
+      </ul>
+      <div class="hint">ملاحظة: الدفع الفعلي يتم بعد موافقة الخادم وإتمامه وفق API الرسمي.</div>
+    </aside>
+  </main>
 
-      await authenticateUser();
-      await createPayment(amount, `تبرع من ${name}`);
+  <footer class="container footer">© <span id="year"></span> تبرعات Pi — جميع الحقوق محفوظة</footer>
 
-      collected += amount;
-      const div = document.createElement('div');
-      div.className = 'donation';
-      div.textContent = `${name} تبرع بـ ${amount} PI`;
-      donationsList.prepend(div);
-      updateProgress();
-    });
-
-    updateProgress();
-  </script>
+  <script src="/app.js" type="module"></script>
 </body>
 </html>
