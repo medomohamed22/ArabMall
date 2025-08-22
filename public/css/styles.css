@@ -1,0 +1,52 @@
+/* Minimal clean Arabic-friendly styles (no external frameworks) */
+:root {
+  --bg: #0b1220;
+  --card: #111a2b;
+  --text: #eaf0ff;
+  --muted: #94a3b8;
+  --primary: #7c3aed;
+  --primary-100:#a78bfa;
+  --ring: #1f2a44;
+  --ok: #10b981;
+  --warn: #f59e0b;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Kufi Arabic", "Noto Sans Arabic", Tahoma, Arial, sans-serif; }
+.container { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+.center { text-align: center; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+.mt { margin-top: 28px; }
+h1 { font-size: 32px; margin: 8px 0; }
+h2 { font-size: 22px; margin: 12px 0; }
+code { background: #0f172a; padding: 2px 6px; border-radius: 8px; border:1px solid var(--ring); }
+
+.card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--ring); }
+.grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+@media (min-width: 780px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+.label { display:block; margin: 10px 0 6px; color: var(--muted); }
+.input {
+  width: 100%; padding: 12px 14px; background: #0f172a; color: var(--text);
+  border: 1px solid var(--ring); border-radius: 12px; outline: none;
+}
+.input:focus { border-color: var(--primary-100); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding: 10px 14px; background: #0f172a; color: var(--text);
+  border: 1px solid var(--ring); border-radius: 14px; cursor: pointer; transition: .2s;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.primary { background: var(--primary); border-color: transparent; }
+.btn.primary:hover { background: #6d28d9; }
+.btn.ghost { background: transparent; }
+
+.alert { background: #1f2937; border: 1px dashed #334155; padding: 12px; border-radius: 12px; margin-bottom: 16px; }
+
+.hidden { display:none; }
+
+.stats { display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.stat { background:#0f172a; border: 1px solid var(--ring); border-radius: 16px; padding: 18px; }
+.stat-number { font-size: 28px; font-weight: 700; }
+.stat-label { color: var(--muted); margin-top: 6px; }

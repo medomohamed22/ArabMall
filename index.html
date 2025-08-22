@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>منصة التبرعات - Pi Network</title>
+  <link rel="stylesheet" href="public/css/styles.css" />
+  <!-- Pi Network JS SDK must be loaded **داخل Pi Browser** -->
+  <script>
+    // الحماية من التشغيل خارج Pi Browser: سنتحقق من وجود window.Pi
+    window.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('pi-warning');
+      if (!window.Pi) {
+        el.style.display = 'block';
+      }
+    });
+  </script>
+</head>
+<body>
+  <header class="container">
+    <h1>منصة التبرعات</h1>
+    <p class="muted">ادعم القضايا الخيرية عبر محفظتك في Pi Network</p>
+  </header>
+
+  <main class="container card">
+    <div id="pi-warning" class="alert" style="display:none">
+      هذا التطبيق يحتاج إلى العمل داخل <strong>Pi Browser</strong> لتمكين الدفع عبر Pi Network.
+    </div>
+
+    <section class="grid">
+      <div>
+        <h2>تسجيل الدخول</h2>
+        <p class="muted">سجّل دخولك للتبرع وربط محفظتك.</p>
+        <button id="loginBtn" class="btn">تسجيل الدخول عبر Pi</button>
+        <div id="userBox" class="hidden">
+          <p>مرحبًا، <strong id="username"></strong></p>
+          <p class="muted small">Public Key: <code id="pubkey"></code></p>
+          <button id="logoutBtn" class="btn ghost">تسجيل الخروج</button>
+        </div>
+      </div>
+
+      <div>
+        <h2>تبرع الآن</h2>
+        <label class="label">المبلغ (Pi)</label>
+        <input type="number" id="amount" min="0.01" step="0.01" value="1.00" class="input" />
+
+        <label class="label">الغرض</label>
+        <select id="cause" class="input">
+          <option value="إطعام محتاج">إطعام محتاج</option>
+          <option value="كفالة يتيم">كفالة يتيم</option>
+          <option value="مساعدة طبية">مساعدة طبية</option>
+        </select>
+
+        <label class="label">ملاحظة</label>
+        <input type="text" id="memo" class="input" placeholder="اختياري" />
+
+        <button id="donateBtn" class="btn primary">تبرع عبر Pi</button>
+
+        <div id="paymentState" class="muted small"></div>
+      </div>
+    </section>
+
+    <section class="mt">
+      <h2>إحصائيات سريعة</h2>
+      <div class="stats" id="stats">
+        <div class="stat">
+          <div class="stat-number" id="stat-total">—</div>
+          <div class="stat-label">إجمالي التبرعات (Pi)</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="stat-count">—</div>
+          <div class="stat-label">عدد المتبرعين</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="stat-last">—</div>
+          <div class="stat-label">آخر تبرع</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container muted small center">
+    © <span id="year"></span> منصة التبرعات - تكامل Pi Network
+  </footer>
+
+  <script src="public/js/app.js"></script>
+</body>
+</html>
