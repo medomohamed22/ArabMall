@@ -4,150 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>موقع التبرعات - Pi Network</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      background: #6a0dad;
-      color: #fff;
-      padding: 15px;
-      font-size: 20px;
-    }
-    main {
-      margin: 30px auto;
-      max-width: 400px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, button {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background: #6a0dad;
-      color: #fff;
-      cursor: pointer;
-      border: none;
-    }
-    button:hover {
-      background: #520a9e;
-    }
-    .donations {
-      margin-top: 20px;
-      text-align: left;
-    }
-    .donation-item {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script> <!-- ربط الـ SDK -->
 </head>
 <body>
-  <header>
-    منصة التبرعات بعملة Pi
-  </header>
+  <div class="container">
+    <h1>تبرع بعملة Pi لدعم المشروع</h1>
+    <input type="number" id="amount" placeholder="ادخل المبلغ بالـ Pi">
+    <button id="donateBtn">تبرع الآن</button>
 
-  <main>
-    <h2>تبرع الآن</h2>
-    <input type="text" id="name" placeholder="الاسم">
-    <input type="number" id="amount" placeholder="المبلغ (π)">
-    <button onclick="donate()">تبرع</button>
+    <h2>سجل التبرعات</h2>
+    <ul id="donationsList"></ul>
+  </div>
 
-    <div class="donations">
-      <h3>قائمة التبرعات:</h3>
-      <div id="donationList"></div>
-    </div>
-  </main>
-
-  <!-- تضمين SDK الرسمي (الوضع العادي وليس sandbox) -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-  <script>
-    // تهيئة Pi SDK
-    Pi.init({ version: "2.0" });
-
-    // طلب تسجيل الدخول من Pi Network
-    async function piLogin() {
-      try {
-        const scopes = ['payments', 'username'];
-        const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-        console.log("تم تسجيل الدخول:", auth);
-        localStorage.setItem("piUser", JSON.stringify(auth));
-      } catch (err) {
-        console.error("فشل تسجيل الدخول:", err);
-      }
-    }
-
-    // في حالة وجود دفعة غير مكتملة
-    function onIncompletePaymentFound(payment) {
-      console.log("دفعة غير مكتملة:", payment);
-    }
-
-    // تخزين التبرع محليًا
-    function donate() {
-      const name = document.getElementById("name").value;
-      const amount = document.getElementById("amount").value;
-
-      if (!name || !amount) {
-        alert("يرجى إدخال الاسم والمبلغ");
-        return;
-      }
-
-      // حفظ التبرع في localStorage
-      let donations = JSON.parse(localStorage.getItem("donations")) || [];
-      const donation = { name, amount, date: new Date().toLocaleString() };
-      donations.push(donation);
-      localStorage.setItem("donations", JSON.stringify(donations));
-
-      // تحديث العرض
-      renderDonations();
-
-      // تنفيذ الدفع عبر Pi Network
-      sendPiPayment(amount, name);
-    }
-
-    // تنفيذ الدفع عبر Pi Network API
-    async function sendPiPayment(amount, name) {
-      try {
-        const payment = await Pi.createPayment({
-          amount: parseFloat(amount),
-          memo: `تبرع من ${name}`,
-          metadata: { donor: name }
-        });
-        console.log("تم إنشاء الدفع:", payment);
-      } catch (err) {
-        console.error("خطأ في عملية الدفع:", err);
-      }
-    }
-
-    // عرض التبرعات من localStorage
-    function renderDonations() {
-      let donations = JSON.parse(localStorage.getItem("donations")) || [];
-      let list = document.getElementById("donationList");
-      list.innerHTML = "";
-      donations.forEach(d => {
-        let item = document.createElement("div");
-        item.className = "donation-item";
-        item.textContent = `${d.name} - ${d.amount}π - ${d.date}`;
-        list.appendChild(item);
-      });
-    }
-
-    // تحميل التبرعات عند بداية الصفحة
-    renderDonations();
-
-    // تسجيل الدخول تلقائيًا عند فتح الموقع
-    piLogin();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
