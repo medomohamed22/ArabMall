@@ -1,5 +1,5 @@
 // ربط محفظتك (ضع عنوان محفظتك هنا)
-const RECEIVER_WALLET = "YOUR_PI_WALLET_ADDRESS";
+const RECEIVER_WALLET = "GBS27QZJP3RLL4D63Z3523BTY272KUPJE3OFQWA67DASMOH4NIZI2CEP";
 
 // عند تحميل الصفحة، عرض التبرعات المخزنة
 window.onload = () => {
@@ -57,3 +57,4 @@ function loadDonations() {
     list.appendChild(li);
   });
 }
+
