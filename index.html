@@ -1,22 +1,827 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>موقع التبرعات - Pi Network</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script> <!-- ربط الـ SDK -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة التبرعات - Pi Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --accent-color: #fd79a8;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #e84393;
+            --dark-color: #2d3436;
+            --light-color: #ddd;
+            --white: #ffffff;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            color: var(--dark-color);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: var(--card-shadow);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #00a085;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Main Content */
+        .main {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            color: var(--white);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .donation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        /* Login Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--danger-color);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--light-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Status Messages */
+        .alert {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: rgba(0, 184, 148, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .alert-error {
+            background: rgba(232, 67, 147, 0.1);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .alert-info {
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        /* Progress Bar */
+        .progress {
+            background: var(--light-color);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        /* Statistics */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--border-radius);
+            color: var(--white);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .donation-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid var(--white);
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .pi-balance {
+            background: rgba(252, 203, 110, 0.2);
+            color: #f39c12;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>تبرع بعملة Pi لدعم المشروع</h1>
-    <input type="number" id="amount" placeholder="ادخل المبلغ بالـ Pi">
-    <button id="donateBtn">تبرع الآن</button>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="logo">💰 منصة التبرعات</a>
+            <ul class="nav-links">
+                <li><a href="#home">الرئيسية</a></li>
+                <li><a href="#campaigns">الحملات</a></li>
+                <li><a href="#about">من نحن</a></li>
+                <li><a href="#contact">اتصل بنا</a></li>
+            </ul>
+            <div class="user-section">
+                <div id="piBalance" class="pi-balance hidden">0 π</div>
+                <div id="loginSection">
+                    <button class="btn btn-primary" onclick="showLoginModal()">تسجيل الدخول</button>
+                </div>
+                <div id="userSection" class="hidden">
+                    <span id="welcomeUser">مرحباً، </span>
+                    <button class="btn btn-outline" onclick="logout()">تسجيل الخروج</button>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-    <h2>سجل التبرعات</h2>
-    <ul id="donationsList"></ul>
-  </div>
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <h1 class="fade-in-up">ساهم في صنع الفرق</h1>
+                <p class="fade-in-up">منصة التبرعات الأولى باستخدام Pi Network</p>
+                <div class="stats fade-in-up">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalDonations">1,234</span>
+                        <div class="stat-label">إجمالي التبرعات</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalAmount">5,678 π</span>
+                        <div class="stat-label">المبلغ المجموع</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="activeCampaigns">12</span>
+                        <div class="stat-label">حملات نشطة</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalUsers">890</span>
+                        <div class="stat-label">المتبرعين</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <script src="app.js"></script>
-</body>
-</html>
+        <!-- Donation Campaigns -->
+        <section class="container">
+            <div class="donation-grid">
+                <div class="card fade-in-up" data-campaign="education">
+                    <h3>📚 دعم التعليم للأطفال</h3>
+                    <p>مساعدة الأطفال المحرومين في الحصول على تعليم جيد ومواد دراسية</p>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 65%"></div>
+                    </div>
+                    <p><strong>تم جمع: 650 π من أصل 1000 π</strong></p>
+                    <button class="btn btn-success" onclick="showDonationForm('education')">تبرع الآن</button>
+                </div>
+
+                <div class="card fade-in-up" data-campaign="health">
+                    <h3>🏥 الرعاية الصحية</h3>
+                    <p>توفير الرعاية الصحية والأدوية للعائلات المحتاجة</p>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 42%"></div>
+                    </div>
+                    <p><strong>تم جمع: 420 π من أصل 1000 π</strong></p>
+                    <button class="btn btn-success" onclick="showDonationForm('health')">تبرع الآن</button>
+                </div>
+
+                <div class="card fade-in-up" data-campaign="food">
+                    <h3>🍽️ الأمن الغذائي</h3>
+                    <p>توفير الطعام والمساعدات الغذائية للأسر الفقيرة</p>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 78%"></div>
+                    </div>
+                    <p><strong>تم جمع: 780 π من أصل 1000 π</strong></p>
+                    <button class="btn btn-success" onclick="showDonationForm('food')">تبرع الآن</button>
+                </div>
+
+                <div class="card fade-in-up" data-campaign="shelter">
+                    <h3>🏠 المأوى والإسكان</h3>
+                    <p>بناء وترميم المساكن للعائلات المشردة</p>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 28%"></div>
+                    </div>
+                    <p><strong>تم جمع: 280 π من أصل 1000 π</strong></p>
+                    <button class="btn btn-success" onclick="showDonationForm('shelter')">تبرع الآن</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Donations -->
+        <section class="container">
+            <div class="card">
+                <h2>📊 آخر التبرعات</h2>
+                <div id="recentDonations">
+                    <div class="alert alert-info">لا توجد تبرعات حديثة للعرض</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideLoginModal()">&times;</span>
+            <h2>تسجيل الدخول عبر Pi Network</h2>
+            <div id="loginStatus"></div>
+            <div class="form-group">
+                <button id="piLoginBtn" class="btn btn-primary" style="width: 100%;" onclick="piLogin()">
+                    <span id="loginBtnText">🔐 تسجيل الدخول بـ Pi Network</span>
+                    <span id="loginSpinner" class="spinner hidden"></span>
+                </button>
+            </div>
+            <p style="font-size: 0.9rem; color: #666; text-align: center;">
+                سيتم توجيهك إلى Pi Network للمصادقة الآمنة
+            </p>
+        </div>
+    </div>
+
+    <!-- Donation Modal -->
+    <div id="donationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideDonationModal()">&times;</span>
+            <h2 id="donationTitle">تبرع للحملة</h2>
+            <div id="donationStatus"></div>
+            <form id="donationForm">
+                <div class="form-group">
+                    <label>مبلغ التبرع (π)</label>
+                    <input type="number" id="donationAmount" class="form-control" min="1" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>رسالة (اختيارية)</label>
+                    <textarea id="donationMessage" class="form-control" rows="3" placeholder="أكتب رسالة تشجيعية..."></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="anonymousDonation">
+                    <label for="anonymousDonation">تبرع مجهول</label>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    <span id="donationBtnText">💝 تأكيد التبرع</span>
+                    <span id="donationSpinner" class="spinner hidden"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Storage System (in-memory for demonstration)
+        class DataStorage {
+            constructor() {
+                this.data = {
+                    user: null,
+                    donations: [],
+                    campaigns: {
+                        education: { raised: 650, target: 1000 },
+                        health: { raised: 420, target: 1000 },
+                        food: { raised: 780, target: 1000 },
+                        shelter: { raised: 280, target: 1000 }
+                    },
+                    stats: {
+                        totalDonations: 1234,
+                        totalAmount: 5678,
+                        activeCampaigns: 12,
+                        totalUsers: 890
+                    }
+                };
+            }
+
+            save(key, value) {
+                this.data[key] = value;
+                this.notifyUpdate();
+            }
+
+            get(key) {
+                return this.data[key];
+            }
+
+            addDonation(donation) {
+                this.data.donations.unshift(donation);
+                this.updateCampaignProgress(donation.campaign, donation.amount);
+                this.updateStats();
+                this.notifyUpdate();
+            }
+
+            updateCampaignProgress(campaign, amount) {
+                if (this.data.campaigns[campaign]) {
+                    this.data.campaigns[campaign].raised += amount;
+                }
+            }
+
+            updateStats() {
+                this.data.stats.totalDonations++;
+                this.data.stats.totalAmount += this.data.donations[0]?.amount || 0;
+            }
+
+            notifyUpdate() {
+                // Update UI
+                this.updateRecentDonations();
+                this.updateProgressBars();
+                this.updateStatsDisplay();
+            }
+
+            updateRecentDonations() {
+                const container = document.getElementById('recentDonations');
+                if (this.data.donations.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info">لا توجد تبرعات حديثة للعرض</div>';
+                    return;
+                }
+
+                const html = this.data.donations.slice(0, 5).map(donation => `
+                    <div style="padding: 0.5rem; border-bottom: 1px solid #eee;">
+                        <strong>${donation.anonymous ? 'متبرع مجهول' : donation.user}</strong> 
+                        تبرع بـ <strong>${donation.amount} π</strong> 
+                        لحملة <em>${this.getCampaignName(donation.campaign)}</em>
+                        <small style="color: #666; display: block;">${donation.date}</small>
+                    </div>
+                `).join('');
+
+                container.innerHTML = html;
+            }
+
+            updateProgressBars() {
+                Object.keys(this.data.campaigns).forEach(campaign => {
+                    const card = document.querySelector(`[data-campaign="${campaign}"]`);
+                    if (card) {
+                        const campaignData = this.data.campaigns[campaign];
+                        const percentage = (campaignData.raised / campaignData.target) * 100;
+                        const progressBar = card.querySelector('.progress-bar');
+                        const progressText = card.querySelector('p strong');
+                        
+                        progressBar.style.width = `${Math.min(percentage, 100)}%`;
+                        progressText.textContent = `تم جمع: ${campaignData.raised} π من أصل ${campaignData.target} π`;
+                    }
+                });
+            }
+
+            updateStatsDisplay() {
+                document.getElementById('totalDonations').textContent = this.data.stats.totalDonations.toLocaleString();
+                document.getElementById('totalAmount').textContent = `${this.data.stats.totalAmount.toLocaleString()} π`;
+                document.getElementById('activeCampaigns').textContent = this.data.stats.activeCampaigns;
+                document.getElementById('totalUsers').textContent = this.data.stats.totalUsers.toLocaleString();
+            }
+
+            getCampaignName(campaign) {
+                const names = {
+                    education: 'دعم التعليم',
+                    health: 'الرعاية الصحية',
+                    food: 'الأمن الغذائي',
+                    shelter: 'المأوى والإسكان'
+                };
+                return names[campaign] || campaign;
+            }
+        }
+
+        // Initialize storage
+        const storage = new DataStorage();
+        let currentUser = null;
+        let selectedCampaign = null;
+
+        // Pi Network SDK Mock (للمحاكاة)
+        const PiNetwork = {
+            authenticate: async () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            user: {
+                                uid: 'pi_user_' + Date.now(),
+                                username: 'pi_user_123',
+                                balance: Math.random() * 1000 + 100
+                            },
+                            accessToken: 'mock_access_token'
+                        });
+                    }, 2000);
+                });
+            },
+
+            createPayment: async (amount, memo, metadata) => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        // محاكاة نجاح أو فشل المدفوعات
+                        if (Math.random() > 0.1) { // 90% نجاح
+                            resolve({
+                                paymentId: 'payment_' + Date.now(),
+                                txid: 'tx_' + Math.random().toString(36).substr(2, 9),
+                                amount: amount,
+                                status: 'completed'
+                            });
+                        } else {
+                            reject(new Error('فشل في معالجة الدفع. يرجى المحاولة مرة أخرى.'));
+                        }
+                    }, 3000);
+                });
+            }
+        };
+
+        // Authentication Functions
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function hideLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        async function piLogin() {
+            const loginBtn = document.getElementById('piLoginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const loginStatus = document.getElementById('loginStatus');
+
+            // Show loading state
+            loginBtn.disabled = true;
+            loginBtnText.classList.add('hidden');
+            loginSpinner.classList.remove('hidden');
+            loginStatus.innerHTML = '<div class="alert alert-info">جار تسجيل الدخول...</div>';
+
+            try {
+                const authResult = await PiNetwork.authenticate();
+                currentUser = authResult.user;
+                
+                // Store user data
+                storage.save('user', currentUser);
+
+                // Update UI
+                updateUserInterface();
+                
+                loginStatus.innerHTML = '<div class="alert alert-success">تم تسجيل الدخول بنجاح!</div>';
+                
+                setTimeout(() => {
+                    hideLoginModal();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Login failed:', error);
+                loginStatus.innerHTML = `<div class="alert alert-error">فشل تسجيل الدخول: ${error.message}</div>`;
+            } finally {
+                // Reset button state
+                loginBtn.disabled = false;
+                loginBtnText.classList.remove('hidden');
+                loginSpinner.classList.add('hidden');
+            }
+        }
+
+        function updateUserInterface() {
+            if (currentUser) {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('userSection').classList.remove('hidden');
+                document.getElementById('piBalance').classList.remove('hidden');
+                
+                document.getElementById('welcomeUser').textContent = `مرحباً، ${currentUser.username}`;
+                document.getElementById('piBalance').textContent = `${currentUser.balance.toFixed(2)} π`;
+            } else {
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('userSection').classList.add('hidden');
+                document.getElementById('piBalance').classList.add('hidden');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            storage.save('user', null);
+            updateUserInterface();
+        }
+
+        // Donation Functions
+        function showDonationForm(campaign) {
+            if (!currentUser) {
+                showLoginModal();
+                return;
+            }
+
+            selectedCampaign = campaign;
+            const campaignNames = {
+                education: '📚 دعم التعليم للأطفال',
+                health: '🏥 الرعاية الصحية',
+                food: '🍽️ الأمن الغذائي',
+                shelter: '🏠 المأوى والإسكان'
+            };
+
+            document.getElementById('donationTitle').textContent = `تبرع لحملة ${campaignNames[campaign]}`;
+            document.getElementById('donationModal').classList.add('active');
+            document.getElementById('donationAmount').focus();
+        }
+
+        function hideDonationModal() {
+            document.getElementById('donationModal').classList.remove('active');
+            document.getElementById('donationForm').reset();
+            document.getElementById('donationStatus').innerHTML = '';
+        }
+
+        // Handle donation form submission
+        document.getElementById('donationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('donationAmount').value);
+            const message = document.getElementById('donationMessage').value;
+            const anonymous = document.getElementById('anonymousDonation').checked;
+            const donationBtn = document.querySelector('#donationForm button[type="submit"]');
+            const donationBtnText = document.getElementById('donationBtnText');
+            const donationSpinner = document.getElementById('donationSpinner');
+            const donationStatus = document.getElementById('donationStatus');
+
+            // Validate amount
+            if (amount <= 0) {
+                donationStatus.innerHTML = '<div class="alert alert-error">يرجى إدخال مبلغ صحيح</div>';
+                return;
+            }
+
+            if (amount > currentUser.balance) {
+                donationStatus.innerHTML = '<div class="alert alert-error">رصيدك غير كافي لإتمام التبرع</div>';
+                return;
+            }
+
+            // Show loading state
+            donationBtn.disabled = true;
+            donationBtnText.classList.add('hidden');
+            donationSpinner.classList.remove('hidden');
+            donationStatus.innerHTML = '<div class="alert alert-info">جار معالجة التبرع...</div>';
+
+            try {
+                // Create payment through Pi Network
+                const payment = await PiNetwork.createPayment(
+                    amount,
+                    `تبرع لحملة ${selectedCampaign}`,
+                    {
+                        campaign: selectedCampaign,
+                        anonymous: anonymous,
+                        message: message
+                    }
+                );
+
+                // Update user balance
+                currentUser.balance -= amount;
+                storage.save('user', currentUser);
+
+                // Record donation
+                const donation = {
+                    id: Date.now(),
+                    user: anonymous ? null : currentUser.username,
+                    anonymous: anonymous,
+                    amount: amount,
+                    campaign: selectedCampaign,
+                    message: message,
+                    date: new Date().toLocaleDateString('ar-EG'),
+                    paymentI
