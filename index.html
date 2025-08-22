@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع تبرعات Pi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>ادعم قضيتنا</h1>
+        <p>تبرعك يصنع فرقًا</p>
+    </header>
+
+    <main>
+        <section id="login-section">
+            <h2>تسجيل الدخول</h2>
+            <p>الرجاء تسجيل الدخول باستخدام حسابك في Pi Network للمتابعة.</p>
+            <button id="login-button">تسجيل الدخول باستخدام Pi</button>
+        </section>
+
+        <section id="donation-section" class="hidden">
+            <h2>مرحبًا بك، <span id="username"></span>!</h2>
+            <p>اختر مبلغ التبرع:</p>
+            <div class="donation-amounts">
+                <button class="amount" data-amount="1">1 π</button>
+                <button class="amount" data-amount="5">5 π</button>
+                <button class="amount" data-amount="10">10 π</button>
+            </div>
+            <input type="number" id="custom-amount" placeholder="أو أدخل مبلغًا آخر">
+            <button id="donate-button">تبرع الآن</button>
+            <p id="payment-status"></p>
+        </section>
+
+        <section id="history-section" class="hidden">
+            <h2>سجل تبرعاتك</h2>
+            <ul id="donations-list"></ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 موقع تبرعات Pi. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script src="https://sdk.pi-network.com/v2/pi-sdk.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
