@@ -1,48 +1,433 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع تبرعات Pi</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تبرعات Pi Network</title>
+  <!-- Pi Network Web SDK (سيعمل داخل Pi Browser). اتركه كما هو، أو عطل تحميله أثناء الاختبار العادي. -->
+  <script src="https://sdk.minepi.com/pi-sdk.js" defer></script>
+  <style>
+    :root{
+      --bg: #0f0b1f;           /* خلفية داكنة أنيقة */
+      --card: #19142e;         /* كرت */
+      --primary: #7c3aed;      /* بنفسجي أساسي */
+      --primary-600:#6d28d9;
+      --primary-700:#5b21b6;
+      --text: #f5f6fb;         /* نص فاتح */
+      --muted: #bdb7d9;        /* وصف */
+      --success:#16a34a;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --glass: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: "Cairo", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(124,58,237,.25), transparent 60%),
+                  radial-gradient(900px 500px at 10% -20%, rgba(139,92,246,.20), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .app{ width: min(980px, 100%); }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .logo{
+      width:42px; height:42px; display:grid; place-items:center; border-radius:12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-700));
+      box-shadow: var(--shadow);
+      font-weight:800; letter-spacing:.5px;
+    }
+    .title{ line-height:1.1; }
+    .title h1{ font-size:clamp(18px, 3vw, 26px); margin:0; }
+    .title p{ margin:2px 0 0; color:var(--muted); font-size:13px }.grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; }
+@media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+
+.card{
+  background: linear-gradient(180deg, rgba(124,58,237,.06), transparent 40%), var(--card);
+  border:1px solid var(--border); border-radius:18px; box-shadow: var(--shadow);
+  padding:18px;
+}
+
+.notice{
+  background: linear-gradient(180deg, rgba(245, 158, 11, .12), transparent 60%), var(--glass);
+  border:1px dashed rgba(245, 158, 11, .35); color:#ffe9b3;
+  padding:12px 14px; border-radius:12px; font-size:13px; margin-bottom:12px;
+}
+
+.controls{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 6px; }
+.chip{
+  padding:10px 14px; border-radius:999px; background:rgba(124,58,237,.12); color:#e9ddff;
+  border:1px solid rgba(124,58,237,.25); cursor:pointer; user-select:none; transition:.2s; font-weight:700;font-size:14px
+}
+.chip:hover{ transform: translateY(-1px); }
+.chip.active{ background: linear-gradient(180deg, var(--primary), var(--primary-700)); border-color:transparent; }
+
+label{ font-size:14px; color:var(--muted); display:block; margin:12px 0 6px; }
+input, textarea, select{
+  width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,.03);
+  color:var(--text); outline:none; transition: .15s; font-size:15px;
+}
+input:focus, textarea:focus{ border-color: rgba(124,58,237,.55); box-shadow: 0 0 0 4px rgba(124,58,237,.15); }
+textarea{ min-height:88px; resize:vertical; }
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:12px 16px; border-radius:12px;
+  border:1px solid transparent; background: linear-gradient(180deg, var(--primary), var(--primary-700)); color:white;
+  font-weight:800; font-size:16px; cursor:pointer; width:100%; box-shadow: var(--shadow); transition:.2s;
+}
+.btn.secondary{ background: transparent; border-color: rgba(124,58,237,.35); color:#e8dcff; }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+.row{ display:flex; gap:10px; }
+.row > *{ flex:1 }
+
+.progress{ height:10px; background:rgba(255,255,255,.06); border-radius:999px; overflow:hidden; border:1px solid var(--border); }
+.bar{ height:100%; width:0%; background: linear-gradient(90deg, var(--primary), #a78bfa); transition:width .6s ease; }
+
+.status{ display:flex; align-items:center; gap:10px; margin:12px 0 0; font-size:13px; color:var(--muted); }
+.dot{ width:10px; height:10px; border-radius:50%; background:#888 }
+.dot.ok{ background:var(--success) }
+.dot.warn{ background:var(--warning) }
+.dot.err{ background:var(--danger) }
+
+.list{ display:grid; gap:10px; margin-top:6px; max-height:340px; overflow:auto; padding-right:4px; }
+.item{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; background: rgba(255,255,255,.03);
+  border:1px solid var(--border); border-radius:12px; padding:12px 14px;
+}
+.item .meta{ font-size:12px; color:var(--muted); }
+.empty{ padding:16px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:12px; }
+
+footer{ margin-top:16px; text-align:center; font-size:12px; color:var(--muted); }
+.badge{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background: rgba(124,58,237,.16); border:1px solid rgba(124,58,237,.35); }
+.kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:12px; padding:2px 6px; border-radius:6px; background: rgba(255,255,255,.08); border:1px solid var(--border) }
+
+  </style>
 </head>
 <body>
+  <div class="app">
     <header>
-        <h1>ادعم قضيتنا</h1>
-        <p>تبرعك يصنع فرقًا</p>
-    </header>
+      <div class="brand">
+        <div class="logo">π</div>
+        <div class="title">
+          <h1>منصّة تبرعات — Pi Network</h1>
+          <p>واجهة واحدة أنيقة بدمج <b>SDK</b> و <b>API</b> للتعرّف على المستخدم والدفع.</p>
+        </div>
+      </div>
+      <div>
+        <button id="loginBtn" class="btn secondary" style="width:auto">تسجيل الدخول بـ Pi</button>
+      </div>
+    </header><div class="grid">
+  <!-- العمود الأيسر: نموذج التبرع -->
+  <section class="card">
+    <div class="notice" id="envNotice">
+      يعمل هذا الملف كـ <b>Demo</b> بدون خادم. لتفعيل الدفعات الحقيقية يُفضّل تشغيله داخل <b>Pi Browser</b> وتوصيل نقاط نهاية للموافقة/الإكمال من السيرفر.
+    </div>
+    <div class="progress" aria-label="حالة العملية"><div class="bar" id="bar"></div></div>
 
-    <main>
-        <section id="login-section">
-            <h2>تسجيل الدخول</h2>
-            <p>الرجاء تسجيل الدخول باستخدام حسابك في Pi Network للمتابعة.</p>
-            <button id="login-button">تسجيل الدخول باستخدام Pi</button>
-        </section>
+    <label>اختر مبلغًا سريعًا</label>
+    <div class="controls" id="quickAmounts"></div>
 
-        <section id="donation-section" class="hidden">
-            <h2>مرحبًا بك، <span id="username"></span>!</h2>
-            <p>اختر مبلغ التبرع:</p>
-            <div class="donation-amounts">
-                <button class="amount" data-amount="1">1 π</button>
-                <button class="amount" data-amount="5">5 π</button>
-                <button class="amount" data-amount="10">10 π</button>
-            </div>
-            <input type="number" id="custom-amount" placeholder="أو أدخل مبلغًا آخر">
-            <button id="donate-button">تبرع الآن</button>
-            <p id="payment-status"></p>
-        </section>
+    <label for="amount">أو أدخل مبلغ مخصص (Pi)</label>
+    <input id="amount" type="number" step="0.01" min="0.01" placeholder="مثال: 1.5" inputmode="decimal" />
 
-        <section id="history-section" class="hidden">
-            <h2>سجل تبرعاتك</h2>
-            <ul id="donations-list"></ul>
-        </section>
-    </main>
+    <div class="row">
+      <div>
+        <label for="name">اسم المتبرع (اختياري)</label>
+        <input id="name" type="text" placeholder="اسمك الكريم" maxlength="40" />
+      </div>
+      <div>
+        <label for="goal">هدف الحملة (Pi) — اختياري</label>
+        <input id="goal" type="number" step="0.01" min="0" placeholder="مثال: 100" />
+      </div>
+    </div>
 
-    <footer>
-        <p>&copy; 2025 موقع تبرعات Pi. جميع الحقوق محفوظة.</p>
-    </footer>
+    <label for="note">رسالة قصيرة (اختياري)</label>
+    <textarea id="note" placeholder="اكتب كلمة لطيفة لدعم الحملة…" maxlength="200"></textarea>
 
-    <script src="https://sdk.pi-network.com/v2/pi-sdk.js"></script>
-    <script src="app.js"></script>
-</body>
+    <button class="btn" id="donateBtn">
+      <span>تبرّع الآن</span>
+      <span id="piUser" style="opacity:.8; font-size:13px"></span>
+    </button>
+
+    <div class="status" id="sdkStatus">
+      <div class="dot warn" id="sdkDot"></div>
+      <div>
+        <b>حالة SDK:</b> <span id="sdkMsg">لم يتم التعرّف على Pi SDK بعد.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- العمود الأيمن: ملخّص التبرعات -->
+  <aside class="card">
+    <div class="row" style="align-items:center; margin-bottom:8px">
+      <div>
+        <div style="font-weight:800; font-size:20px">سجلّ التبرعات</div>
+        <div class="meta">يتم حفظ السجل محليًا على جهازك (localStorage)</div>
+      </div>
+      <button class="btn secondary" id="clearHistory" style="width:auto">مسح السجل</button>
+    </div>
+    <div class="list" id="historyList"></div>
+    <div class="empty" id="emptyHistory" hidden>لا توجد تبرعات بعد.</div>
+
+    <hr style="border-color:transparent; border-bottom:1px solid var(--border); margin:14px 0">
+    <div class="row">
+      <div>
+        <div class="meta">إجمالي المتجمّع</div>
+        <div style="font-weight:800; font-size:18px" id="total">0</div>
+      </div>
+      <div style="flex:2">
+        <div class="meta">التقدّم نحو الهدف</div>
+        <div class="progress"><div class="bar" id="goalBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  يعمل بكود واحد HTML/CSS/JS. 
+  <span class="badge">نصيحة: للاختبار اضغط <span class="kbd">Alt + D</span> لمحاكاة تبرّع.</span>
+</footer>
+
+  </div>  <script>
+    /******************** إعدادات عامة ********************/
+    const QUICK_AMOUNTS = [0.5, 1, 2, 5, 10];
+    const STORAGE_KEY = 'pi_donations_v1';
+    const state = {
+      user: null,          // { username, accessToken }
+      paymentInFlight: false,
+      donations: loadDonations(), // [{ amount, name, note, ts }]
+      goal: 0,
+      env: {
+        inPiBrowser: !!(navigator.userAgent||'').toLowerCase().includes('pi browser'),
+        sdkPresent: false,
+      }
+    };
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
+
+    // عناصر DOM
+    const bar = $('#bar');
+    const sdkDot = $('#sdkDot');
+    const sdkMsg = $('#sdkMsg');
+    const piUser = $('#piUser');
+    const quickAmounts = $('#quickAmounts');
+    const amountInput = $('#amount');
+    const nameInput = $('#name');
+    const goalInput = $('#goal');
+    const noteInput = $('#note');
+    const donateBtn = $('#donateBtn');
+    const loginBtn = $('#loginBtn');
+    const envNotice = $('#envNotice');
+
+    const historyList = $('#historyList');
+    const emptyHistory = $('#emptyHistory');
+    const totalEl = $('#total');
+    const goalBar = $('#goalBar');
+
+    /******************** أدوات مساعدة ********************/
+    function fmt(n){ return Number(n).toLocaleString('ar-EG', { maximumFractionDigits: 6 }); }
+    function now(){ return new Date(); }
+    function tsToText(ts){ return new Date(ts).toLocaleString('ar-EG'); }
+    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+    function saveDonations(){
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.donations)); }catch(e){}
+    }
+    function loadDonations(){
+      try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){ return []; }
+    }
+
+    function setProgress(p){ bar.style.width = clamp(p,0,100) + '%'; }
+    function toast(msg, type='info'){
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = `position:fixed; inset-inline-end:16px; bottom:16px; background:${type==='error'?'#ef4444':type==='warn'?'#f59e0b':'#10b981'}; color:white; padding:10px 14px; border-radius:10px; box-shadow:${getComputedStyle(document.documentElement).getPropertyValue('--shadow')}; z-index:9999; font-weight:700`;
+      document.body.appendChild(t); setTimeout(()=>t.remove(), 2800);
+    }
+
+    function renderQuickAmounts(){
+      quickAmounts.innerHTML = '';
+      QUICK_AMOUNTS.forEach(v=>{
+        const b = document.createElement('button');
+        b.className='chip'; b.textContent = v + ' π';
+        b.onclick = ()=>{ amountInput.value = String(v); highlightChip(b); };
+        quickAmounts.appendChild(b);
+      });
+    }
+    function highlightChip(active){
+      $$('.chip').forEach(ch=> ch.classList.toggle('active', ch===active));
+    }
+
+    function renderHistory(){
+      historyList.innerHTML = '';
+      if(!state.donations.length){ emptyHistory.hidden = false; totalEl.textContent='0'; goalBar.style.width='0%'; return; }
+      emptyHistory.hidden = true;
+      let total = 0;
+      state.donations.slice().reverse().forEach(d=>{
+        total += Number(d.amount)||0;
+        const row = document.createElement('div'); row.className='item';
+        row.innerHTML = `
+          <div>
+            <div style="font-weight:700">${d.name||'متبرّع كريم'}</div>
+            <div class="meta">${tsToText(d.ts)} — ${d.note?('“'+(d.note.replace(/[<>]/g,''))+'”'):'—'}</div>
+          </div>
+          <div style="font-weight:800">${fmt(d.amount)} π</div>
+        `;
+        historyList.appendChild(row);
+      });
+      totalEl.textContent = fmt(total) + ' π';
+      const goal = Number(goalInput.value)||0; const pct = goal? clamp((total/goal)*100, 0, 100):0;
+      goalBar.style.width = pct + '%';
+    }
+
+    function addDonationToHistory(entry){
+      state.donations.push(entry); saveDonations(); renderHistory();
+    }
+
+    function setSdkStatus(ok, msg){
+      state.env.sdkPresent = !!ok;
+      sdkDot.className = 'dot ' + (ok? 'ok':'warn');
+      sdkMsg.textContent = msg;
+    }
+
+    function updateEnvNotice(){
+      if(state.env.inPiBrowser){
+        envNotice.innerHTML = '✨ ممتاز! أنت داخل <b>Pi Browser</b>. يمكنك إجراء تسجيل الدخول والدفع الحقيقيين.';
+      } else {
+        envNotice.innerHTML = '⚠️ أنت خارج <b>Pi Browser</b>. التسجيل والدفع الحقيقيان يتطلبان تشغيل الواجهة داخل Pi Browser. سنستخدم <b>وضع المحاكاة</b> هنا للاختبار.';
+      }
+    }
+
+    /******************** تكامل Pi SDK ********************/
+    // ملاحظة مهمة: للمدفوعات الحقيقية يُفضّل وجود خادم يُوافق ويُكمل الدفعة (server-side approval & completion)
+    // النّقاط الوهمية أدناه توضّح أين تستدعي خادمك. هذا الملف يقدّم محاكاة إذا لم يتوفّر خادم.
+
+    function onIncompletePaymentFound(payment){
+      console.log('وجد دفعة غير مكتملة', payment);
+    }
+
+    async function piLogin(){
+      if(!window.Pi){ toast('Pi SDK غير متوفر هنا، تم تفعيل وضع المحاكاة','warn'); return { user: { username: 'guest' }, accessToken: 'demo' }; }
+      try{
+        const scopes = ['username','payments'];
+        const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+        return auth; // {user:{username}, accessToken}
+      }catch(err){
+        console.error(err); toast('فشل تسجيل الدخول','error'); throw err;
+      }
+    }
+
+    async function createPiPayment(amount, memo, metadata){
+      if(!window.Pi){
+        // محاكاة دفع ناجح:
+        await new Promise(r=>setTimeout(r, 1200));
+        return { txid: 'demo-'+Math.random().toString(36).slice(2), simulated: true };
+      }
+      return await window.Pi.createPayment({ amount, memo, metadata }, {
+        onReadyForServerApproval: async paymentId => {
+          // TODO: استدعِ خادمك للموافقة على الدفعة
+          console.log('Ready for approval:', paymentId);
+        },
+        onReadyForServerCompletion: async paymentId => {
+          // TODO: استدعِ خادمك لإكمال الدفعة
+          console.log('Ready for completion:', paymentId);
+        },
+        onCancel: () => { toast('تم إلغاء العملية','warn'); setProgress(0); state.paymentInFlight=false; },
+        onError: (err) => { console.error(err); toast('حدث خطأ في الدفع','error'); setProgress(0); state.paymentInFlight=false; }
+      });
+    }
+
+    /******************** أحداث الواجهة ********************/
+    loginBtn.addEventListener('click', async ()=>{
+      try{
+        const auth = await piLogin();
+        state.user = auth.user; piUser.textContent = '— @'+(state.user.username||'guest');
+        toast('تم تسجيل الدخول كـ @'+(state.user.username||'guest'));
+      }catch{}
+    });
+
+    donateBtn.addEventListener('click', async ()=>{
+      if(state.paymentInFlight) return;
+      const amount = Number(amountInput.value || 0);
+      if(!(amount>0)){ toast('أدخل مبلغًا صالحًا أكبر من 0','warn'); amountInput.focus(); return; }
+      const name = nameInput.value.trim();
+      const note = noteInput.value.trim();
+
+      // سجّل الهدف في الحالة للعرض
+      state.goal = Number(goalInput.value)||0;
+
+      try{
+        state.paymentInFlight = true; setProgress(12);
+        if(!state.user){
+          const auth = await piLogin(); setProgress(28);
+          state.user = auth.user; piUser.textContent = '— @'+(state.user.username||'guest');
+        }
+
+        const memo = `Donation by ${name||state.user?.username||'Anonymous'}`;
+        const metadata = { name, note };
+
+        setProgress(55);
+        const res = await createPiPayment(amount, memo, metadata);
+        setProgress(88);
+
+        // في بيئة حقيقية، انتظر تأكيد الشبكة (server-side webhook). هنا سنعتبرها ناجحة
+        addDonationToHistory({ amount, name: name||state.user?.username||'مجهول', note, ts: Date.now() });
+        setProgress(100);
+        toast('شكرًا لدعمك! تم تسجيل التبرّع');
+        noteInput.value=''; highlightChip();
+        setTimeout(()=>setProgress(0), 1400);
+        state.paymentInFlight=false;
+      }catch(err){
+        console.error(err); toast('فشلت عملية التبرع','error'); state.paymentInFlight=false; setProgress(0);
+      }
+    });
+
+    $('#clearHistory').addEventListener('click', ()=>{
+      if(confirm('مسح سجلّ التبرعات المحلي؟')){
+        state.donations = []; saveDonations(); renderHistory();
+      }
+    });
+
+    goalInput.addEventListener('input', renderHistory);
+
+    // اختصار محاكاة تبرع: Alt + D
+    window.addEventListener('keydown', (e)=>{
+      if(e.altKey && (e.key==='d' || e.key==='د')){
+        amountInput.value = amountInput.value || '1'; donateBtn.click();
+      }
+    });
+
+    /******************** تشغيل مبدئي ********************/
+    function init(){
+      renderQuickAmounts();
+      renderHistory();
+      updateEnvNotice();
+
+      // تحقق من وجود SDK
+      if(window.Pi){
+        setSdkStatus(true, 'SDK جاهز. يمكنك تسجيل الدخول والدفع داخل Pi Browser.');
+        try{ window.Pi.init({ version: '2.0' }); }catch(_){/* تجاهل */}
+      } else {
+        setSdkStatus(false, 'لم يُكتشف SDK. سنستخدم وضع المحاكاة خارج Pi Browser.');
+      }
+
+      // استرجاع اسم المستخدم الأخير (اختياري)
+      const last = sessionStorage.getItem('pi_user');
+      if(last){ piUser.textContent = '— @'+last; }
+    }
+
+    // راقب تحميل سكربت SDK (عند تأخره)
+    const sdkCheckInterval = setInterval(()=>{
+      if(window.Pi){ setSdkStatus(true, 'SDK جاهز.'); clearInterval(sdkCheckInterval); }
+    }, 800);
+
+    init();
+  </script></body>
 </html>
