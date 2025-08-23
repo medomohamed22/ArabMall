@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 const PI_API_URL = "https://api.minepi.com/v2";
-const API_KEY = "ضع-API-Key-الخاص-بتطبيقك"; // من Pi Developer Portal
+const API_KEY = "32ugihf3x7slhkgtllrqy2m2spboxu1s2jams9lxpoqd066sxvtyjhldqbdflvzl"; // من Pi Developer Portal
 
 // الموافقة على الدفع
 app.post("/approve_payment", async (req, res) => {
