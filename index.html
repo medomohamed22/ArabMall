@@ -1,154 +1,111 @@
-<!DOCTYPE html><html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>تبرعات Pi Network</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js" defer></script>
+  <meta charset="UTF-8">
+  <title>موقع تبرعات Pi Network</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <style>
     body {
-      margin: 0;
-      font-family: "Cairo", sans-serif;
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
-      color: #fff;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
     }
     .container {
-      background: rgba(0,0,0,0.6);
+      background: #fff;
       padding: 30px;
-      border-radius: 16px;
-      max-width: 500px;
-      width: 100%;
+      border-radius: 15px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    }
-    h1 {
-      margin-bottom: 10px;
-    }
-    p {
-      color: #d1c4e9;
-      margin-bottom: 20px;
-    }
-    input, textarea, button {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: none;
-      font-size: 15px;
-    }
-    input, textarea {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      outline: none;
     }
     button {
-      background: #7c3aed;
-      color: #fff;
-      font-weight: bold;
+      padding: 12px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #5b21b6;
-    }
-    .donations {
-      margin-top: 20px;
-      text-align: left;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    .donation-item {
-      background: rgba(255,255,255,0.1);
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      background: purple;
+      color: white;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>تبرعات Pi Network</h1>
-    <p id="welcome">جاري التحقق من حسابك عبر Pi Network...</p><form id="donationForm">
-  <input type="number" id="amount" placeholder="المبلغ (Pi)" min="0.01" step="0.01" required />
-  <input type="text" id="name" placeholder="اسمك (اختياري)" />
-  <textarea id="note" placeholder="رسالة قصيرة (اختياري)"></textarea>
-  <button type="submit">تبرّع الآن</button>
-</form>
+    <h2>تبرع باستخدام Pi Network</h2>
+    <button id="payBtn">تبرع الآن</button>
+    <p id="status"></p>
+  </div>
 
-<div class="donations" id="donationsList"></div>
+  <script>
+    const backendUrl = "http://localhost:3000"; // غيّرها لرابط السيرفر الحقيقي بعد الرفع
 
-  </div>  <script>
-    const donationsList = document.getElementById("donationsList");
-    const welcome = document.getElementById("welcome");
-    const STORAGE_KEY = "pi_donations";
-    let currentUser = null;
+    // تهيئة SDK
+    Pi.init({ version: "2.0" });
 
-    function loadDonations(){
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e){ return []; }
-    }
-    function saveDonations(list){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    }
-    function renderDonations(){
-      const donations = loadDonations();
-      donationsList.innerHTML = "";
-      donations.slice().reverse().forEach(d => {
-        const div = document.createElement("div");
-        div.className = "donation-item";
-        div.innerHTML = `<b>${d.name||"مجهول"}</b> — ${d.amount} π<br><small>${d.note||""}</small>`;
-        donationsList.appendChild(div);
-      });
-    }
+    document.getElementById("payBtn").onclick = async () => {
+      document.getElementById("status").innerText = "جاري تسجيل الدخول...";
 
-    // تسجيل الدخول عند الدخول مباشرة
-    window.addEventListener("load", async () => {
-      if(window.Pi){
-        Pi.init({ version: "2.0" });
-        try {
-          const scopes = ["username", "payments"];
-          const auth = await Pi.authenticate(scopes, (payment)=>{
-            console.log("دفعة غير مكتملة:", payment);
-          });
-          currentUser = auth.user;
-          welcome.textContent = "مرحبًا @" + currentUser.username;
-        } catch (e){
-          welcome.textContent = "فشل تسجيل الدخول بـ Pi";
-        }
-      } else {
-        welcome.textContent = "⚠️ هذا العرض تجريبي خارج Pi Browser";
+      try {
+        // تسجيل الدخول
+        const scopes = ['payments'];
+        const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
+        console.log("User:", user);
+
+        document.getElementById("status").innerText = "جاري إنشاء الدفع...";
+
+        // إنشاء عملية دفع
+        const payment = await Pi.createPayment({
+          amount: 1, // قيمة التبرع Pi
+          memo: "تبرع للموقع",
+          metadata: { custom: "data" }
+        });
+
+        console.log("Payment created:", payment);
+        document.getElementById("status").innerText = "تم إنشاء الدفع. بانتظار الإتمام...";
+
+        // إرسال الـ paymentId للسيرفر للموافقة
+        await fetch(`${backendUrl}/approve_payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId: payment.identifier })
+        });
+
+        // عند اكتمال الدفع (txid)
+        Pi.openPayment(payment.identifier, {
+          onReadyForServerApproval: async (paymentId) => {
+            console.log("Ready for server approval:", paymentId);
+          },
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            console.log("Ready for server completion:", paymentId, txid);
+            await fetch(`${backendUrl}/complete_payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid })
+            });
+            document.getElementById("status").innerText = "✅ تم الدفع بنجاح!";
+          },
+          onCancel: (paymentId) => {
+            console.log("الدفع تم إلغاؤه:", paymentId);
+            document.getElementById("status").innerText = "❌ تم إلغاء الدفع.";
+          },
+          onError: (error, payment) => {
+            console.error("خطأ:", error);
+            document.getElementById("status").innerText = "⚠️ حدث خطأ أثناء الدفع.";
+          }
+        });
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("status").innerText = "فشل تسجيل الدخول أو الدفع.";
       }
-      renderDonations();
-    });
+    };
 
-    // عند التبرع
-    document.getElementById("donationForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const amount = parseFloat(document.getElementById("amount").value);
-      const name = document.getElementById("name").value;
-      const note = document.getElementById("note").value;
-
-      if(!(amount>0)) return alert("أدخل مبلغ صحيح");
-
-      if(window.Pi){
-        try{
-          const payment = await Pi.createPayment({ amount, memo: "Donation", metadata:{ name, note } }, {
-            onReadyForServerApproval: (paymentId)=>{ console.log("Ready for approval:", paymentId); },
-            onReadyForServerCompletion: (paymentId)=>{ console.log("Ready for completion:", paymentId); },
-            onCancel: ()=> alert("تم إلغاء العملية"),
-            onError: (err)=> alert("خطأ في العملية")
-          });
-          console.log(payment);
-        }catch(err){ console.error(err); }
-      }
-
-      const donations = loadDonations();
-      donations.push({ amount, name, note });
-      saveDonations(donations);
-      renderDonations();
-      document.getElementById("donationForm").reset();
-    });
-  </script></body>
+    // في حالة دفع غير مكتمل
+    function onIncompletePaymentFound(payment) {
+      console.log("Incomplete payment:", payment);
+    }
+  </script>
+</body>
 </html>
