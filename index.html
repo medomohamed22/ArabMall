@@ -1,291 +1,312 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donate Way - تبرع بسهولة</title>
-    <style>
-        /* CSS Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Donate Way — منصة التبرعات</title>
+  <!-- Pi Network Platform SDK (يعمل بالكامل داخل Pi Browser) -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <style>
+    :root {
+      --bg: #0f0a1f;
+      --card: #15102b;
+      --white: #ffffff;
+      --muted: #c7bdf1;
+      --purple-900:#3c0b86;
+      --purple-700:#6a24ff;
+      --purple-600:#7a3cff;
+      --purple-500:#8b5cf6;
+      --purple-400:#a78bfa;
+      --ring: rgba(138,92,246,.5);
+      --success:#16a34a; --warn:#f59e0b; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--white);
+      background: radial-gradient(1000px 600px at 50% -10%, rgba(167,139,250,.2), transparent 55%),
+                  radial-gradient(800px 500px at 120% 20%, rgba(124,58,237,.15), transparent 60%), var(--bg);
+    }
+    a{color:var(--purple-400);text-decoration:none}
+    .container{max-width:1060px;margin:0 auto;padding:24px}
+    .nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(8px);background:linear-gradient(to bottom,rgba(10,5,25,.7),rgba(10,5,25,.2));border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800}
+    .logo{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:conic-gradient(from 210deg,var(--purple-700),var(--purple-400));box-shadow:0 10px 30px rgba(124,58,237,.35), inset 0 0 16px rgba(255,255,255,.18)}
+    .tag{font-size:12px;color:var(--muted);border:1px solid rgba(255,255,255,.08);padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.03)}.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:stretch}
+@media (max-width:900px){.hero{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.08);box-shadow:0 20px 60px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.02);border-radius:24px;padding:22px}
+.heading{font-size:clamp(28px,3.2vw,42px);line-height:1.15;margin:2px 0 10px}
+.sub{color:var(--muted);margin:0 0 18px}
 
-        .container {
-            background-color: #ffffff;
-            padding: 2rem 3rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            border-top: 5px solid #8a2be2;
-        }
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.grid-2{grid-template-columns:1fr}}
 
-        .header h1 {
-            color: #8a2be2;
-            margin-bottom: 0.5rem;
-            font-size: 2.5rem;
-        }
+.input,.select,.btn{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--white);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+.input::placeholder{color:rgba(255,255,255,.55)}
 
-        .header p {
-            color: #777;
-            margin-bottom: 2rem;
-        }
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{cursor:pointer;user-select:none;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.chip.active{background:linear-gradient(90deg,var(--purple-700),var(--purple-500));box-shadow:0 6px 18px rgba(124,58,237,.35)}
 
-        .user-info {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background-color: #f9f4ff;
-            border-radius: 8px;
-            border-left: 4px solid #8a2be2;
-        }
+.btn{cursor:pointer;font-weight:800;letter-spacing:.2px;transition:transform .05s ease}
+.btn.primary{background:linear-gradient(90deg,var(--purple-700),var(--purple-500));border-color:transparent}
+.btn.ghost{background:rgba(255,255,255,.04)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
 
-        .user-info p {
-            margin: 0;
-            font-size: 1.1rem;
-        }
+.separator{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);margin:16px 0}
 
-        .user-info strong {
-            color: #8a2be2;
-        }
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 8px}
+.stat{padding:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;text-align:center}
+.stat .v{font-weight:800;font-size:18px}
+.stat .k{font-size:12px;color:var(--muted)}
 
-        .donation-form .form-group {
-            margin-bottom: 1.5rem;
-            text-align: right;
-        }
+.list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:4px}
+.donor{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.03)}
+.avatar{width:38px;height:38px;border-radius:12px;background:linear-gradient(180deg,var(--purple-400),var(--purple-700));display:grid;place-items:center;font-weight:800}
+.donor small{color:var(--muted)}
 
-        .donation-form label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-            color: #555;
-        }
+.toast-area{position:fixed;inset-inline:0;bottom:16px;display:grid;place-items:center;pointer-events:none}
+.toast{pointer-events:auto;display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);background:rgba(21,16,43,.8);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.badge{padding:3px 8px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12)}
+.ok{background:rgba(22,163,74,.18)}.warn{background:rgba(245,158,11,.18)}.err{background:rgba(239,68,68,.18)}
 
-        .donation-form input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
+footer{opacity:.8;margin-top:28px;font-size:14px;color:var(--muted)}
+code.inline{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:8px}
 
-        .donation-form input:focus {
-            outline: none;
-            border-color: #8a2be2;
-        }
-
-        .donate-button {
-            background-color: #8a2be2;
-            color: #ffffff;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        .donate-button:hover {
-            background-color: #7324b8;
-            transform: translateY(-2px);
-        }
-
-        .donate-button:disabled {
-            background-color: #c7a3e8;
-            cursor: not-allowed;
-        }
-
-        .footer {
-            margin-top: 2rem;
-            font-size: 0.9rem;
-            color: #999;
-        }
-
-        #status-message {
-            margin-top: 1.5rem;
-            font-weight: bold;
-        }
-
-        .success {
-            color: #28a745;
-        }
-
-        .error {
-            color: #dc3545;
-        }
-    </style>
+  </style>
 </head>
 <body>
-
-    <div class="container">
-        <header class="header">
-            <h1>Donate Way</h1>
-            <p>تبرعك يصنع فرقاً</p>
-        </header>
-
-        <main>
-            <div id="user-info" class="user-info" style="display: none;">
-                <p>مرحباً بك، <strong id="username"></strong>!</p>
-            </div>
-
-            <form id="donation-form" class="donation-form">
-                <div class="form-group">
-                    <label for="amount">مبلغ التبرع (Pi)</label>
-                    <input type="number" id="amount" placeholder="ادخل المبلغ" required min="0.1">
-                </div>
-                <div class="form-group">
-                    <label for="memo">رسالة (اختياري)</label>
-                    <input type="text" id="memo" placeholder="اكتب رسالة قصيرة">
-                </div>
-                <button type="submit" id="donate-button" class="donate-button" disabled>تسجيل الدخول للتبرع</button>
-            </form>
-            <div id="status-message"></div>
-        </main>
-
-        <footer class="footer">
-            <p>&copy; 2025 Donate Way. جميع الحقوق محفوظة.</p>
-        </footer>
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo">DW</div>
+        <div>
+          <div style="font-size:18px">Donate Way</div>
+          <div class="tag">منصة تبرعات — أرجواني × أبيض</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="btnLogin" class="btn ghost" title="تسجيل الدخول عبر Pi">تسجيل الدخول</button>
+        <button id="btnLogout" class="btn ghost" style="display:none" title="تسجيل الخروج">تسجيل الخروج</button>
+      </div>
+    </div>
+  </header>  <main class="container" style="margin-top:18px">
+    <section class="hero">
+      <!-- النموذج -->
+      <div class="card" id="donateCard">
+        <h1 class="heading">ادعم مبادرات الخير عبر
+          <span style="background:linear-gradient(90deg,var(--purple-700),var(--purple-400));-webkit-background-clip:text;color:transparent">Pi Network</span>
+        </h1>
+        <p class="sub">سجّل عبر Pi للتعرّف عليك، ثم اختر المبلغ والغرض وسيتم إنشاء دفعة آمنة عبر <b>Pi SDK</b>.</p><div class="grid-2">
+      <div>
+        <label>الغرض من التبرع</label>
+        <select id="cause" class="select" aria-label="Cause">
+          <option value="general">دعم عام</option>
+          <option value="education">التعليم</option>
+          <option value="health">الصحة</option>
+          <option value="poverty">مكافحة الفقر</option>
+        </select>
+      </div>
+      <div>
+        <label>ملاحظة (اختياري)</label>
+        <input id="memo" class="input" placeholder="اكتب رسالة قصيرة" maxlength="80" />
+      </div>
     </div>
 
-    <script src="https://sdk.pi-network.dev/v2/pi-sdk.js"></script>
-    <script>
-        // JavaScript Logic
-        document.addEventListener('DOMContentLoaded', () => {
-            const donateButton = document.getElementById('donate-button');
-            const userInfoDiv = document.getElementById('user-info');
-            const usernameSpan = document.getElementById('username');
-            const statusMessage = document.getElementById('status-message');
-            const donationForm = document.getElementById('donation-form');
-            const amountInput = document.getElementById('amount');
-            const memoInput = document.getElementById('memo');
+    <div class="separator"></div>
 
-            // 1. Initialize Pi SDK
-            Pi.init({ version: "2.0", sandbox: true });
+    <div style="margin-bottom:10px">اختر المبلغ (π)</div>
+    <div class="chips" id="presetChips">
+      <div class="chip" data-val="1">1 π</div>
+      <div class="chip" data-val="3">3 π</div>
+      <div class="chip" data-val="5">5 π</div>
+      <div class="chip" data-val="10">10 π</div>
+      <div class="chip" data-val="25">25 π</div>
+    </div>
+    <div style="margin-top:10px" class="grid-2">
+      <input id="amount" class="input" inputmode="decimal" placeholder="أو أدخل مبلغًا مخصصًا (π)" />
+      <button id="btnDonate" class="btn primary">تبرّع الآن</button>
+    </div>
 
-            // 2. Authenticate User
-            async function authenticateUser() {
-                try {
-                    const scopes = ['username', 'payments'];
-                    const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                    
-                    // Display user information
-                    usernameSpan.textContent = authResult.user.username;
-                    userInfoDiv.style.display = 'block';
+    <div class="separator"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="userBadge" class="badge warn" style="display:none">لم تسجّل الدخول بعد</div>
+      <div id="userInfo" style="color:var(--muted)">غير مسجل — سجّل للدفع عبر Pi</div>
+    </div>
+  </div>
 
-                    // Enable donation button
-                    donateButton.textContent = 'تبرع الآن';
-                    donateButton.disabled = false;
-                    
-                    setStatus('تم تسجيل الدخول بنجاح.', 'success');
+  <!-- القائمة الجانبية -->
+  <aside class="card">
+    <h3 style="margin:0 0 6px">آخر التبرعات</h3>
+    <div class="stats">
+      <div class="stat"><div class="v" id="statCount">0</div><div class="k">عدد المتبرعين</div></div>
+      <div class="stat"><div class="v" id="statSum">0 π</div><div class="k">إجمالي التبرعات</div></div>
+      <div class="stat"><div class="v" id="statAvg">0 π</div><div class="k">متوسط التبرع</div></div>
+    </div>
+    <div class="list" id="donorsList"></div>
+  </aside>
+</section>
 
-                } catch (err) {
-                    console.error('Authentication failed', err);
-                    setStatus('فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.', 'error');
-                    donateButton.textContent = 'فشل الاتصال';
-                }
-            }
-            
-            // Call authentication on button click initially
-            donateButton.addEventListener('click', (e) => {
-                if(donateButton.textContent === 'تسجيل الدخول للتبرع') {
-                    e.preventDefault(); // Prevent form submission
-                    authenticateUser();
-                }
-            });
+<footer>
+  <p>
+    • يتطلب الدفع الحقيقي عبر <b>Pi Network</b> فتح الموقع داخل <span class="inline">Pi Browser</span> وتوفير خادمين (API)
+    لنقاط النهاية <code class="inline">/create-payment</code> و <code class="inline">/complete-payment</code> لتوقيع المعاملة والتحقق منها.<br/>
+    • هذا الملف يوفّر <b>الفرونت إند</b> + تكامل SDK من جهة العميل مع مُعالجات افتراضية. عدّل عناوين نقاط النهاية عند تجهيز الخادم.
+  </p>
+</footer>
 
+  </main>  <div class="toast-area" aria-live="polite" aria-atomic="true"></div>  <script>
+    // ===== أدوات سريعة =====
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const state = {
+      user: null,
+      donations: JSON.parse(localStorage.getItem('dw_donations') || '[]')
+    };
+    const saveDonations = () => localStorage.setItem('dw_donations', JSON.stringify(state.donations.slice(0,200)));
 
-            // 3. Handle Donation Form Submission
-            donationForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const amount = parseFloat(amountInput.value);
-                const memo = memoInput.value || 'Donation from Donate Way';
+    function toast(msg, type='ok', timeout=3000){
+      const area = document.querySelector('.toast-area');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.innerHTML = `<span class="badge ${type}">${type==='ok'?'تم':type==='warn'?'تنبيه':'خطأ'}</span><span>${msg}</span>`;
+      area.appendChild(el); setTimeout(()=>el.remove(), timeout);
+    }
 
-                if (isNaN(amount) || amount <= 0) {
-                    setStatus('الرجاء إدخال مبلغ صحيح للتبرع.', 'error');
-                    return;
-                }
+    function updateStats(){
+      const nums = state.donations.map(d=>Number(d.amount)||0);
+      const sum = nums.reduce((a,b)=>a+b,0);
+      const avg = nums.length ? sum/nums.length : 0;
+      $('#statCount').textContent = String(nums.length);
+      $('#statSum').textContent = `${sum.toFixed(2)} π`;
+      $('#statAvg').textContent = `${avg.toFixed(2)} π`;
+    }
 
-                donateButton.disabled = true;
-                donateButton.textContent = 'جاري معالجة التبرع...';
-                setStatus('يرجى تأكيد المعاملة في نافذة Pi.', '');
+    function renderDonors(){
+      const list = $('#donorsList'); list.innerHTML='';
+      state.donations.slice(-50).forEach(d=>{
+        const item = document.createElement('div'); item.className='donor';
+        const initials = (d.username||'??').slice(0,2).toUpperCase();
+        item.innerHTML = `
+          <div class="avatar">${initials}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+              <strong>${d.username||'مستخدم'}</strong>
+              <small>${new Date(d.ts).toLocaleString()}</small>
+            </div>
+            <small>${d.memo?d.memo+' — ':''}<b>${Number(d.amount).toFixed(2)} π</b> • ${d.cause}</small>
+          </div>`;
+        list.prepend(item);
+      });
+      updateStats();
+    }
 
-                try {
-                    const paymentData = {
-                        amount: amount,
-                        memo: memo,
-                        // This should be your app's developer wallet address
-                        recipient: 'GBQQM25FR7A22J7T4LOM2C5KI2SJKFL3G2QJ2JUIJQL53A65AKB55NBA', 
-                    };
+    function setUser(u){
+      state.user = u;
+      if(u){
+        $('#userInfo').innerHTML = `مسجل باسم <b>@${u.username}</b>${u.uid? ' • UID: '+u.uid:''}`;
+        $('#btnLogin').style.display='none'; $('#btnLogout').style.display='inline-block';
+      } else {
+        $('#userInfo').textContent = 'غير مسجل — سجّل للدفع عبر Pi';
+        $('#btnLogin').style.display='inline-block'; $('#btnLogout').style.display='none';
+      }
+    }
 
-                    const payment = await Pi.createPayment(paymentData, {
-                        onReadyForServerApproval: (paymentId) => {
-                            // In a real app, you would approve this on your server
-                            // For this example, we'll assume auto-approval
-                            console.log('Payment ready for server approval:', paymentId);
-                        },
-                        onReadyForServerCompletion: (paymentId, txid) => {
-                            // In a real app, you would complete this on your server
-                            console.log('Payment ready for server completion:', paymentId, txid);
-                        },
-                        onCancel: (paymentId) => {
-                            setStatus('تم إلغاء عملية التبرع.', 'error');
-                            resetButton();
-                        },
-                        onError: (error, payment) => {
-                            console.error('Payment Error:', error);
-                            setStatus(`حدث خطأ: ${error.message}`, 'error');
-                            resetButton();
-                        },
-                    });
-                    
-                    // This part is reached if Pi.createPayment resolves successfully
-                    // In a more robust implementation, success is confirmed on the server-side
-                    if(payment.completed) {
-                        setStatus(`شكراً لتبرعك بمبلغ ${amount} π!`, 'success');
-                        donationForm.reset();
-                    }
+    // ===== أزرار المبالغ الجاهزة =====
+    $('#presetChips').addEventListener('click', (e)=>{
+      const chip = e.target.closest('.chip'); if(!chip) return;
+      $$('.chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active');
+      $('#amount').value = chip.dataset.val;
+    });
 
+    // ===== تهيئة Pi SDK =====
+    let PiRef = null;
+    try {
+      if(window.Pi){
+        window.Pi.init({ version: '2.0' });
+        PiRef = window.Pi; console.log('Pi SDK initialized');
+      } else {
+        console.log('Pi SDK not found (خارج Pi Browser)');
+      }
+    } catch(err){ console.warn('Pi init error', err); }
 
-                } catch (err) {
-                    console.error('Donation processing error', err);
-                    setStatus('حدث خطأ أثناء معالجة التبرع.', 'error');
-                } finally {
-                    resetButton();
-                }
-            });
+    async function loginWithPi(){
+      if(!PiRef){ toast('افتح الموقع داخل Pi Browser لتسجيل الدخول الحقيقي.', 'warn'); return; }
+      try{
+        const scopes = ['username','payments'];
+        const res = await PiRef.authenticate(scopes, onIncompletePayment);
+        setUser({ username: res.user.username, uid: res.user.uid });
+        localStorage.setItem('dw_user', JSON.stringify(state.user));
+        toast('تم تسجيل الدخول عبر Pi');
+      }catch(err){ console.error(err); toast('فشل تسجيل الدخول: '+(err?.message||''),'err'); }
+    }
 
-            // Handle incomplete payments (required by SDK)
-            function onIncompletePaymentFound(payment) {
-                console.log('Incomplete payment found:', payment);
-                setStatus('تم العثور على دفعة غير مكتملة. يرجى إكمالها أو إلغائها.', 'error');
-                // Here you would typically have logic to resolve the incomplete payment
-            };
-            
-            function setStatus(message, type) {
-                statusMessage.textContent = message;
-                statusMessage.className = type; // 'success' or 'error'
-            }
+    function logout(){ localStorage.removeItem('dw_user'); setUser(null); toast('تم تسجيل الخروج'); }
 
-            function resetButton() {
-                donateButton.disabled = false;
-                donateButton.textContent = 'تبرع الآن';
-            }
-            
-            // Initially, the button is for login
-            // The logic to switch to donation is handled after successful authentication.
+    async function onIncompletePayment(payment){
+      // يتم استدعاؤها بواسطة SDK للمدفوعات غير المكتملة
+      console.log('Incomplete payment', payment);
+    }
 
-        });
-    </script>
-</body>
+    // ===== إستدعاءات الخادم (يجب تعديلها للخادم الحقيقي) =====
+    const API_CREATE = '/create-payment';
+    const API_COMPLETE = '/complete-payment';
+
+    async function createPaymentOnServer(payload){
+      const res = await fetch(API_CREATE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      if(!res.ok) throw new Error('CREATE API فشل');
+      return res.json();
+    }
+    async function completePaymentOnServer(payment){
+      const res = await fetch(API_COMPLETE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payment) });
+      if(!res.ok) throw new Error('COMPLETE API فشل');
+      return res.json();
+    }
+
+    async function donate(){
+      const amountStr = ($('#amount').value||'').replace(/,/g,'.');
+      const amount = Number(amountStr);
+      const cause = $('#cause').value; const memo = ($('#memo').value||'').trim().slice(0,80);
+      if(!amount || amount<=0){ toast('أدخل مبلغًا صحيحًا بالـ π','warn'); return; }
+
+      if(PiRef && state.user){
+        // تدفق حقيقي عبر SDK + خادمك
+        try{
+          toast('جاري إنشاء دفعة Pi...');
+          const createPayload = { amount, memo, metadata:{ cause } };
+          const serverPayment = await createPaymentOnServer(createPayload);
+          const payment = await PiRef.createPayment(serverPayment);
+          await completePaymentOnServer(payment);
+          // حفظ محلي لعرض القائمة
+          state.donations.push({ username: state.user.username, amount, cause, memo, ts: Date.now() });
+          saveDonations(); renderDonors();
+          toast('تم إنشاء الدفعة — أكملها داخل Pi Browser');
+        }catch(err){
+          console.error(err);
+          toast('تعذّر الربط بالخادم. تم حفظ العملية كمحاكاة محلية.', 'warn');
+          state.donations.push({ username: state.user.username, amount, cause, memo, ts: Date.now() });
+          saveDonations(); renderDonors();
+        }
+      } else {
+        // محاكاة كاملة خارج Pi Browser أو بدون تسجيل
+        toast('محاكاة: قم بتجربة الواجهة. للمدفوعات الحقيقية ادخل عبر Pi وسجّل الدخول.', 'warn');
+        state.donations.push({ username: 'زائر', amount, cause, memo, ts: Date.now() });
+        saveDonations(); renderDonors();
+      }
+
+      // إعادة ضبط اختيار المبالغ
+      $$('.chip').forEach(c=>c.classList.remove('active')); $('#amount').value='';
+    }
+
+    // ===== ربط الأحداث =====
+    $('#btnLogin').addEventListener('click', loginWithPi);
+    $('#btnLogout').addEventListener('click', logout);
+    $('#btnDonate').addEventListener('click', donate);
+
+    // ===== إستعادة جلسة المستخدم =====
+    try{ const u = JSON.parse(localStorage.getItem('dw_user')||'null'); if(u) setUser(u); }catch(_){ }
+
+    // ===== عرض أولي =====
+    renderDonors();
+  </script></body>
 </html>
