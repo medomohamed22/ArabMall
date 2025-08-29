@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DonateWay - منصة التبرعات</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary-purple: #8A2BE2; /* Amethyst */
+            --secondary-purple: #9370DB; /* Medium Purple */
+            --light-grey: #f4f4f4;
+            --white: #ffffff;
+            --text-color: #333;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-grey);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-purple);
+            color: var(--white);
+            padding: 20px 0;
+            text-align: center;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* Navigation (Optional, if you want more pages) */
+        nav {
+            background-color: var(--secondary-purple);
+            padding: 10px 0;
+            text-align: center;
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--light-grey);
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .section h2 {
+            color: var(--primary-purple);
+            border-bottom: 2px solid var(--secondary-purple);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Hero Section */
+        #hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+            color: var(--white);
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        #hero h2 {
+            color: var(--white);
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        #hero p {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: var(--white);
+            color: var(--primary-purple);
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .button:hover {
+            background-color: var(--light-grey);
+            color: var(--secondary-purple);
+            transform: translateY(-2px);
+        }
+
+        /* Donation Form */
+        #donation-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #donation-form label {
+            font-weight: bold;
+            color: var(--primary-purple);
+        }
+
+        #donation-form input[type="number"],
+        #donation-form textarea,
+        #donation-form input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid var(--secondary-purple);
+            border-radius: 5px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #donation-form input[type="number"]:focus,
+        #donation-form textarea:focus,
+        #donation-form input[type="text"]:focus {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 5px rgba(138, 43, 226, 0.5);
+        }
+
+        #donation-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        #donation-form button {
+            background-color: var(--primary-purple);
+            color: var(--white);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        #donation-form button:hover {
+            background-color: var(--secondary-purple);
+            transform: translateY(-2px);
+        }
+
+        /* Pi Network Status */
+        #pi-status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background-color: var(--light-grey);
+            border: 1px dashed var(--secondary-purple);
+        }
+
+        .status-message {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .connected {
+            color: green;
+        }
+
+        .disconnected {
+            color: red;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            background-color: var(--primary-purple);
+            color: var(--white);
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            #hero h2 {
+                font-size: 2.2em;
+            }
+
+            #hero p {
+                font-size: 1.1em;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DonateWay</h1>
+            <p>معًا نصنع فرقًا في العالم</p>
+        </header>
+
+        <section id="hero">
+            <h2>دعمك يضيء دروب المحتاجين</h2>
+            <p>انضم إلينا في مهمتنا لإحداث تأثير إيجابي.</p>
+            <a href="#donate" class="button">تبرع الآن</a>
+        </section>
+
+        <section id="about" class="section">
+            <h2>من نحن</h2>
+            <p>DonateWay هي منصة مخصصة لربط المتبرعين السخيين بالقضايا النبيلة. نؤمن بقوة العمل الجماعي لإحداث تغيير حقيقي ومستدام في مجتمعاتنا وحول العالم. مهمتنا هي توفير طريقة شفافة وآمنة للتبرع، مما يضمن وصول مساهماتك إلى حيث تشتد الحاجة إليها.</p>
+            <p>من خلال دمج Pi Network، نسعى إلى تمكين مجتمع Pi من دعم المبادرات الخيرية بسهولة وكفاءة، مستفيدين من إمكانيات العملات الرقمية لإحداث فرق.</p>
+        </section>
+
+        <section id="donate" class="section">
+            <h2>قم بالتبرع</h2>
+            <p>اختر المبلغ الذي ترغب في التبرع به وساهم في بناء مستقبل أفضل. جميع التبرعات تتم بأمان عبر Pi Network.</p>
+
+            <form id="donation-form">
+                <label for="amount">مبلغ التبرع (Pi):</label>
+                <input type="number" id="amount" name="amount" min="0.01" step="0.01" value="1" required>
+
+                <label for="message">رسالة (اختياري):</label>
+                <textarea id="message" name="message" placeholder="اكتب رسالتك هنا..."></textarea>
+
+                <div id="pi-status">
+                    <h3>حالة اتصال Pi Network:</h3>
+                    <p id="pi-connection-status" class="disconnected">جاري الاتصال...</p>
+                    <p id="pi-user-info"></p>
+                </div>
+
+                <button type="submit" id="donate-button" disabled>تبرع عبر Pi Network</button>
+                <p id="donation-message" style="text-align: center; color: var(--primary-purple); font-weight: bold;"></p>
+            </form>
+        </section>
+
+        <footer>
+            <p>&copy; 2023 DonateWay. جميع الحقوق محفوظة.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Pi Network SDK Integration (Place this script at the end of body or in head with defer)
+        // Ensure you are running this code within the Pi Browser for full functionality.
+
+        let piUser; // To store Pi user information
+
+        async function connectToPi() {
+            try {
+                // Check if Pi SDK is available
+                if (window.Pi) {
+                    document.getElementById('pi-connection-status').textContent = 'جاري الاتصال بـ Pi Network...';
+                    document.getElementById('pi-connection-status').className = 'status-message';
+
+                    // Authenticate user
+                    const auth = await window.Pi.authenticate(['username'], onIncompletePaymentFound);
+                    piUser = auth.user;
+                    console.log('Pi User Authenticated:', piUser);
+
+                    document.getElementById('pi-connection-status').textContent = `متصل! مرحبًا، ${piUser.username}`;
+                    document.getElementById('pi-connection-status').className = 'status-message connected';
+                    document.getElementById('pi-user-info').textContent = `معرف المستخدم: ${piUser.uid}`;
+                    document.getElementById('donate-button').disabled = false; // Enable donation button
+
+                } else {
+                    document.getElementById('pi-connection-status').textContent = 'Pi SDK غير متوفر. يرجى فتح الموقع في متصفح Pi Browser.';
+                    document.getElementById('pi-connection-status').className = 'status-message disconnected';
+                    document.getElementById('donate-button').disabled = true;
+                }
+            } catch (error) {
+                console.error('Error connecting to Pi Network:', error);
+                document.getElementById('pi-connection-status').textContent = `فشل الاتصال: ${error.message}. يرجى المحاولة مرة أخرى.`;
+                document.getElementById('pi-connection-status').className = 'status-message disconnected';
+                document.getElementById('donate-button').disabled = true;
+            }
+        }
+
+        // Callback function for incomplete payments (required by Pi SDK)
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete payment found:', payment);
+            // Here you would typically handle the incomplete payment, e.g., prompt the user to complete it
+            // For this basic example, we just log it.
+        }
+
+        // Handle donation form submission
+        document.getElementById('donation-form').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const amount = parseFloat(document.getElementById('amount').value);
+            const message = document.getElementById('message').value.trim();
+            const donationMessageElement = document.getElementById('donation-message');
+
+            if (isNaN(amount) || amount <= 0) {
+                donationMessageElement.textContent = 'يرجى إدخال مبلغ تبرع صالح.';
+                return;
+            }
+
+            if (!piUser) {
+                donationMessageElement.textContent = 'يرجى الاتصال بـ Pi Network أولاً.';
+                return;
+            }
+
+            try {
+                donationMessageElement.textContent = 'جاري معالجة تبرعك...';
+                donationMessageElement.style.color = 'var(--primary-purple)';
+
+                // Create a payment
+                const payment = await window.Pi.createPayment({
+                    amount: amount,
+                    memo: message || `تبرع لمنصة DonateWay من ${piUser.username}`, // A short description of the payment
+                    metadata: {
+                        cause: 'General Donation',
+                        donor_message: message,
+                        donor_uid: piUser.uid
+                    }
+                }, {
+                    onReadyForServerApproval: function(paymentId) {
+                        // This function is called when the payment is ready to be approved by your server.
+                        // In a real application, you would send paymentId to your backend server here.
+                        // Your server would then use the Pi Payments API to complete the payment.
+                        // For this client-side only example, we'll simulate approval.
+                        console.log('Payment ready for server approval:', paymentId);
+                        donationMessageElement.textContent = 'تم إرسال طلب الدفع بنجاح إلى Pi Network. في انتظار تأكيد الدفع...';
+                        
+                        // Simulate server approval for demonstration purposes.
+                        // !!! In a real app, this MUST be handled by your backend. !!!
+                        setTimeout(() => {
+                            window.Pi.completePayment(paymentId, { txid: "simulated_txid_" + Date.now() })
+                                .then(payment => {
+                                    console.log('Simulated payment completion:', payment);
+                                    donationMessageElement.textContent = `شكرًا لتبرعك بمبلغ ${payment.amount} Pi! تم تأكيد الدفع.`;
+                                    donationMessageElement.style.color = 'green';
+                                })
+                                .catch(error => {
+                                    console.error('Simulated payment completion failed:', error);
+                                    donationMessageElement.textContent = `حدث خطأ أثناء إتمام التبرع: ${error.message}`;
+                                    donationMessageElement.style.color = 'red';
+                                });
+                        }, 2000); // Simulate network delay
+                    },
+                    onReadyForServerCompletion: function(paymentId, txid) {
+                        // This function is called when the payment is completed by the Pi Network.
+                        // Your server would typically receive a webhook for this.
+                        // For this client-side example, we just log it.
+                        console.log('Payment ready for server completion:', paymentId, txid);
+                        donationMessageElement.textContent = `تم تأكيد الدفع بنجاح مع Pi Network! رقم المعاملة: ${txid}`;
+                        donationMessageElement.style.color = 'green';
+                        // Here you might update UI or record the donation locally.
+                    },
+                    onCancel: function(paymentId) {
+                        console.log('Payment cancelled by user:', paymentId);
+                        donationMessageElement.textContent = 'تم إلغاء التبرع بواسطة المستخدم.';
+                        donationMessageElement.style.color = 'orange';
+                    },
+                    onError: function(error, payment) {
+                        console.error('Payment error:', error, payment);
+                        let errorMessage = 'حدث خطأ غير متوقع أثناء معالجة التبرع.';
+                        if (error && error.message) {
+                            errorMessage = error.message;
+                        }
+                        donationMessageElement.textContent = `فشل التبرع: ${errorMessage}`;
+                        donationMessageElement.style.color = 'red';
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating Pi payment:', error);
+                donationMessageElement.textContent = `فشل بدء التبرع: ${error.message}`;
+                donationMessageElement.style.color = 'red';
+            }
+        });
+
+        // Initialize Pi connection on page load
+        window.addEventListener('load', connectToPi);
+
+        // Optional: Smooth scrolling for "Donate Now" button
+        document.querySelector('.button').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>
