@@ -1,0 +1,153 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donate Way</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+      text-align: center;
+    }
+    header {
+      background: #6a0dad;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .container {
+      margin: 40px auto;
+      max-width: 500px;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #6a0dad;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #550a8a;
+    }
+    .donations {
+      margin-top: 30px;
+      text-align: left;
+    }
+    .donation-entry {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <header>Donate Way</header>
+  <div class="container">
+    <p>ادعمنا من خلال شبكة Pi Network وساهم في نشر الخير ❤️</p>
+    <button onclick="loginWithPi()">تسجيل الدخول باستخدام Pi</button>
+    <br />
+    <input id="amount" type="number" placeholder="ادخل المبلغ بالـ Pi" style="padding:10px; width: 80%; margin-top:10px; border-radius:8px; border:1px solid #ccc;" />
+    <button onclick="donate()">تبرع الآن</button><div class="donations" id="donations">
+  <h3>آخر التبرعات</h3>
+  <div id="donations-list"></div>
+</div>
+
+  </div>  <script>
+    // إعداد Pi SDK
+    Pi.init({ version: "2.0" });
+
+    let currentUser = null;
+    const API_CREATE = "http://localhost:3000/create-payment"; // استبدل برابط السيرفر
+    const API_COMPLETE = "http://localhost:3000/complete-payment"; // استبدل برابط السيرفر
+
+    function onIncompletePayment(payment) {
+      console.log("دفعة غير مكتملة:", payment);
+    }
+
+    async function loginWithPi() {
+      try {
+        const scopes = ["username", "payments"];
+        const authResult = await Pi.authenticate(scopes, onIncompletePayment);
+        currentUser = authResult.user;
+        alert("تم تسجيل الدخول: " + currentUser.username);
+      } catch (err) {
+        console.error(err);
+        alert("فشل تسجيل الدخول");
+      }
+    }
+
+    async function donate() {
+      if (!currentUser) {
+        alert("من فضلك سجل الدخول أولاً");
+        return;
+      }
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (!amount || amount <= 0) {
+        alert("أدخل مبلغ صالح");
+        return;
+      }
+
+      try {
+        // إنشاء الدفع من السيرفر
+        const createRes = await fetch(API_CREATE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount, username: currentUser.username })
+        });
+        const paymentData = await createRes.json();
+
+        // إنشاء الدفع عبر Pi SDK
+        const payment = await Pi.createPayment({
+          amount: amount,
+          memo: "Donation via DonateWay",
+          metadata: { username: currentUser.username }
+        }, {
+          onReadyForServerApproval: (paymentId) => {
+            console.log("جاهز للموافقة: ", paymentId);
+          },
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            console.log("جاهز للإكمال: ", paymentId, txid);
+            // إرسال للإكمال
+            await fetch(API_COMPLETE, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid })
+            });
+          },
+          onCancel: (paymentId) => {
+            console.log("تم الإلغاء", paymentId);
+          },
+          onError: (err, paymentId) => {
+            console.error("خطأ", err, paymentId);
+          }
+        });
+
+        alert("تم إرسال التبرع بنجاح!");
+        addDonation(currentUser.username, amount);
+      } catch (err) {
+        console.error(err);
+        alert("فشل التبرع");
+      }
+    }
+
+    function addDonation(username, amount) {
+      const list = document.getElementById("donations-list");
+      const div = document.createElement("div");
+      div.className = "donation-entry";
+      div.innerText = username + " — " + amount + " Pi";
+      list.prepend(div);
+    }
+  </script></body>
+</html>
