@@ -1,451 +1,303 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DonateWay - منصة التبرعات</title>
-    <style>
-        /* Global Styles */
-        :root {
-            --primary-purple: #8A2BE2; /* Amethyst */
-            --secondary-purple: #9370DB; /* Medium Purple */
-            --light-grey: #f4f4f4;
-            --white: #ffffff;
-            --text-color: #333;
-            --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            --border-radius: 8px;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Donate Way — تبرع</title>
 
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-grey);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
+  <!-- Pi SDK (official frontend SDK) -->
+  <!-- لاحظ: عند الانتقال للإنتاج، قم بإزالة sandbox:true وعلّم عنوان التطوير في بوابة المطور -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    // تهيئة الـ SDK — استخدم sandbox:true للاختبار المحلي
+    window.Pi?.init?.({ version: "2.0", sandbox: true });
+  </script>
 
-        .container {
-            max-width: 960px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
+  <style>
+    :root{
+      --purple:#6B2E8A;         /* أرجواني رئيسي */
+      --purple-dark:#4a1e5f;    /* أغمق للأزرار */
+      --white:#ffffff;
+      --glass: rgba(255,255,255,0.06);
+      --card-shadow: 0 8px 24px rgba(107,46,138,0.18);
+      --radius:16px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        /* Header */
-        header {
-            background-color: var(--primary-purple);
-            color: var(--white);
-            padding: 20px 0;
-            text-align: center;
-            border-top-left-radius: var(--border-radius);
-            border-top-right-radius: var(--border-radius);
-            margin-bottom: 20px;
-        }
+    /* صفحة في الوسط */
+    html,body{height:100%; margin:0; background: linear-gradient(180deg, #f7f3fa 0%, #fff 100%);}
+    .wrap{
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 2.5em;
-            letter-spacing: 2px;
-        }
+    /* اللوحة */
+    .card{
+      width:100%;
+      max-width:920px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94));
+      border-radius:var(--radius);
+      box-shadow:var(--card-shadow);
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      overflow:hidden;
+      align-items:stretch;
+    }
 
-        header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
+    /* جانب العرض/تعريف */
+    .hero{
+      padding:36px;
+      background: linear-gradient(180deg, rgba(107,46,138,0.06), rgba(107,46,138,0.03));
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      justify-content:center;
+    }
+    .logo{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo .dot{
+      width:56px;height:56px;border-radius:12px;background:var(--purple);
+      display:flex;align-items:center;justify-content:center;color:var(--white);font-weight:700;font-size:20px;
+      box-shadow:0 6px 18px rgba(107,46,138,0.2);
+    }
+    h1{margin:0;font-size:28px;color:var(--purple-dark);}
+    p.lead{margin:0;color:#4b3b57;opacity:0.95}
 
-        /* Navigation (Optional, if you want more pages) */
-        nav {
-            background-color: var(--secondary-purple);
-            padding: 10px 0;
-            text-align: center;
-            border-bottom-left-radius: var(--border-radius);
-            border-bottom-right-radius: var(--border-radius);
-            margin-bottom: 20px;
-        }
+    /* جانب التبرع */
+    .panel{
+      padding:28px;
+      background: linear-gradient(180deg, var(--white), #fcfcfe);
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      justify-content:center;
+    }
 
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
+    label{font-size:13px;color:#5b4a6b;margin-bottom:6px;display:block}
+    input[type="number"], input[type="text"], select{
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid #efe6f5;
+      background:#fff; box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+      font-size:15px; color:#33263a;
+    }
 
-        nav a {
-            color: var(--white);
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s ease;
-        }
+    .row{display:flex;gap:10px}
+    .col{flex:1}
 
-        nav a:hover {
-            color: var(--light-grey);
-        }
+    .btn{
+      padding:12px 16px;border-radius:12px;border:0;font-weight:600;font-size:15px;
+      cursor:pointer;background:var(--purple);color:var(--white);
+      box-shadow: 0 8px 20px rgba(107,46,138,0.18);
+    }
+    .btn.secondary{
+      background:transparent;color:var(--purple);border:1px solid rgba(107,46,138,0.12);
+      box-shadow:none;
+    }
 
-        /* Sections */
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
+    .status{
+      padding:12px;border-radius:10px;background:var(--glass);color:var(--purple-dark);
+      font-size:14px;border:1px solid rgba(107,46,138,0.06);
+    }
 
-        .section h2 {
-            color: var(--primary-purple);
-            border-bottom: 2px solid var(--secondary-purple);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+    .footer{
+      font-size:12px;color:#6b587f;margin-top:6px;
+    }
 
-        /* Hero Section */
-        #hero {
-            text-align: center;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-            color: var(--white);
-            border-radius: var(--border-radius);
-            margin-bottom: 30px;
-            box-shadow: var(--shadow);
-        }
-
-        #hero h2 {
-            color: var(--white);
-            font-size: 2.8em;
-            margin-bottom: 15px;
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        #hero p {
-            font-size: 1.3em;
-            margin-bottom: 30px;
-        }
-
-        .button {
-            display: inline-block;
-            background-color: var(--white);
-            color: var(--primary-purple);
-            padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-
-        .button:hover {
-            background-color: var(--light-grey);
-            color: var(--secondary-purple);
-            transform: translateY(-2px);
-        }
-
-        /* Donation Form */
-        #donation-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        #donation-form label {
-            font-weight: bold;
-            color: var(--primary-purple);
-        }
-
-        #donation-form input[type="number"],
-        #donation-form textarea,
-        #donation-form input[type="text"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            border: 1px solid var(--secondary-purple);
-            border-radius: 5px;
-            font-size: 1em;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        #donation-form input[type="number"]:focus,
-        #donation-form textarea:focus,
-        #donation-form input[type="text"]:focus {
-            border-color: var(--primary-purple);
-            box-shadow: 0 0 5px rgba(138, 43, 226, 0.5);
-        }
-
-        #donation-form textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        #donation-form button {
-            background-color: var(--primary-purple);
-            color: var(--white);
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        #donation-form button:hover {
-            background-color: var(--secondary-purple);
-            transform: translateY(-2px);
-        }
-
-        /* Pi Network Status */
-        #pi-status {
-            text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            background-color: var(--light-grey);
-            border: 1px dashed var(--secondary-purple);
-        }
-
-        .status-message {
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .connected {
-            color: green;
-        }
-
-        .disconnected {
-            color: red;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 30px;
-            background-color: var(--primary-purple);
-            color: var(--white);
-            border-bottom-left-radius: var(--border-radius);
-            border-bottom-right-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                padding: 15px;
-            }
-
-            header h1 {
-                font-size: 2em;
-            }
-
-            #hero h2 {
-                font-size: 2.2em;
-            }
-
-            #hero p {
-                font-size: 1.1em;
-            }
-
-            nav ul {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
-    </style>
+    /* responsive */
+    @media (max-width:880px){
+      .card{grid-template-columns:1fr; padding:0; }
+      .hero{order:2;padding:20px}
+      .panel{order:1;padding:20px}
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>DonateWay</h1>
-            <p>معًا نصنع فرقًا في العالم</p>
-        </header>
+  <div class="wrap">
+    <div class="card" role="main" aria-labelledby="title">
+      <div class="hero" aria-hidden="false">
+        <div class="logo">
+          <div class="dot">DW</div>
+          <div>
+            <div style="font-size:13px;color:#8e6da8">منصة</div>
+            <h1 id="title">Donate Way</h1>
+          </div>
+        </div>
+        <p class="lead">سهل، آمن، ومرتبط بمحفظة Pi — تبرعاتك توصل للمحتاجين مباشرة.</p>
 
-        <section id="hero">
-            <h2>دعمك يضيء دروب المحتاجين</h2>
-            <p>انضم إلينا في مهمتنا لإحداث تأثير إيجابي.</p>
-            <a href="#donate" class="button">تبرع الآن</a>
-        </section>
+        <div style="margin-top:12px;">
+          <strong>كيف نعمل:</strong>
+          <ul style="margin:8px 0 0 18px;color:#5b4a6b">
+            <li>اتصل بمحفظة Pi الخاصة بالمستخدم للمصادقة.</li>
+            <li>أنشئ طلب دفع واحصل على موافقة المستخدم عبر Pi Wallet (Pi Browser).</li>
+            <li>أكمل المعاملة وتسجيلها في السيرفر (backend).</li>
+          </ul>
+        </div>
 
-        <section id="about" class="section">
-            <h2>من نحن</h2>
-            <p>DonateWay هي منصة مخصصة لربط المتبرعين السخيين بالقضايا النبيلة. نؤمن بقوة العمل الجماعي لإحداث تغيير حقيقي ومستدام في مجتمعاتنا وحول العالم. مهمتنا هي توفير طريقة شفافة وآمنة للتبرع، مما يضمن وصول مساهماتك إلى حيث تشتد الحاجة إليها.</p>
-            <p>من خلال دمج Pi Network، نسعى إلى تمكين مجتمع Pi من دعم المبادرات الخيرية بسهولة وكفاءة، مستفيدين من إمكانيات العملات الرقمية لإحداث فرق.</p>
-        </section>
+        <div class="footer">ملاحظة: لتشغيل الدفع الحقيقي يجب تسجيل التطبيق في Developer Portal ووجود سيرفر لاستقبال وإكمال المعاملات.</div>
+      </div>
 
-        <section id="donate" class="section">
-            <h2>قم بالتبرع</h2>
-            <p>اختر المبلغ الذي ترغب في التبرع به وساهم في بناء مستقبل أفضل. جميع التبرعات تتم بأمان عبر Pi Network.</p>
+      <div class="panel" aria-hidden="false">
+        <div>
+          <label>اسم المتبرع (اختياري)</label>
+          <input id="donorName" type="text" placeholder="اسمك أو 'مجهول'"/>
+        </div>
 
-            <form id="donation-form">
-                <label for="amount">مبلغ التبرع (Pi):</label>
-                <input type="number" id="amount" name="amount" min="0.01" step="0.01" value="1" required>
+        <div>
+          <label>المبلغ (Pi)</label>
+          <input id="amount" type="number" min="0.01" step="0.01" value="1" />
+        </div>
 
-                <label for="message">رسالة (اختياري):</label>
-                <textarea id="message" name="message" placeholder="اكتب رسالتك هنا..."></textarea>
+        <div class="row">
+          <div class="col">
+            <label>سبب التبرع</label>
+            <select id="cause">
+              <option value="general">عام — دعم المبادرة</option>
+              <option value="food">مساعدات غذائية</option>
+              <option value="medical">دعم طبي</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>لغة الواجهة</label>
+            <select id="lang">
+              <option value="ar">العربية</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
 
-                <div id="pi-status">
-                    <h3>حالة اتصال Pi Network:</h3>
-                    <p id="pi-connection-status" class="disconnected">جاري الاتصال...</p>
-                    <p id="pi-user-info"></p>
-                </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+          <button id="authBtn" class="btn">تسجيل الدخول بـ Pi</button>
+          <button id="payBtn" class="btn secondary">دفع (محاكاة)</button>
+        </div>
 
-                <button type="submit" id="donate-button" disabled>تبرع عبر Pi Network</button>
-                <p id="donation-message" style="text-align: center; color: var(--primary-purple); font-weight: bold;"></p>
-            </form>
-        </section>
+        <div id="status" class="status" aria-live="polite">حالة: غير متصل بـ Pi</div>
 
-        <footer>
-            <p>&copy; 2023 DonateWay. جميع الحقوق محفوظة.</p>
-        </footer>
+        <small style="margin-top:8px;color:#7a5f88">ملاحظة: زر "دفع (محاكاة)" يوضح كيف سنستدعي سيرفرك لإنشاء الدفعة. لتفعيل الدفع الحقيقي، تحتاج سيرفر يستدعي /payment/approve و /payment/complete كما في توثيق Pi.</small>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Pi Network SDK Integration (Place this script at the end of body or in head with defer)
-        // Ensure you are running this code within the Pi Browser for full functionality.
+  <script>
+    // عناصر الواجهة
+    const authBtn = document.getElementById('authBtn');
+    const payBtn = document.getElementById('payBtn');
+    const statusEl = document.getElementById('status');
+    const amountEl = document.getElementById('amount');
+    const donorNameEl = document.getElementById('donorName');
+    const causeEl = document.getElementById('cause');
 
-        let piUser; // To store Pi user information
+    // حالة المستخدم محلياً
+    let user = null; // سيحتوي على accessToken وusername بعد المصادقة (من SDK)
 
-        async function connectToPi() {
-            try {
-                // Check if Pi SDK is available
-                if (window.Pi) {
-                    document.getElementById('pi-connection-status').textContent = 'جاري الاتصال بـ Pi Network...';
-                    document.getElementById('pi-connection-status').className = 'status-message';
+    // تحديث الحالة بالواجهة
+    function setStatus(txt){
+      statusEl.textContent = 'حالة: ' + txt;
+    }
 
-                    // Authenticate user
-                    const auth = await window.Pi.authenticate(['username'], onIncompletePaymentFound);
-                    piUser = auth.user;
-                    console.log('Pi User Authenticated:', piUser);
-
-                    document.getElementById('pi-connection-status').textContent = `متصل! مرحبًا، ${piUser.username}`;
-                    document.getElementById('pi-connection-status').className = 'status-message connected';
-                    document.getElementById('pi-user-info').textContent = `معرف المستخدم: ${piUser.uid}`;
-                    document.getElementById('donate-button').disabled = false; // Enable donation button
-
-                } else {
-                    document.getElementById('pi-connection-status').textContent = 'Pi SDK غير متوفر. يرجى فتح الموقع في متصفح Pi Browser.';
-                    document.getElementById('pi-connection-status').className = 'status-message disconnected';
-                    document.getElementById('donate-button').disabled = true;
-                }
-            } catch (error) {
-                console.error('Error connecting to Pi Network:', error);
-                document.getElementById('pi-connection-status').textContent = `فشل الاتصال: ${error.message}. يرجى المحاولة مرة أخرى.`;
-                document.getElementById('pi-connection-status').className = 'status-message disconnected';
-                document.getElementById('donate-button').disabled = true;
-            }
+    // --- 1) تسجيل دخول / مصادقة عبر Pi SDK ---
+    authBtn.addEventListener('click', async () => {
+      try {
+        setStatus('جاري طلب المصادقة من Pi Wallet...');
+        // طريقة مصادقة شائعة: Pi.authenticate() أو Pi.authenticate({scope: ['username']})
+        // الوثائق تنصح باستعمال Pi.authenticate للحصول على accessToken ثم التحقق من السيرفر.
+        if (!window.Pi || !Pi.authenticate) {
+          setStatus('خطأ: Pi SDK غير متاح. جرب تشغيل الصفحة داخل Pi Browser أو تأكد من تحميل sdk.minepi.com.');
+          return;
         }
 
-        // Callback function for incomplete payments (required by Pi SDK)
-        function onIncompletePaymentFound(payment) {
-            console.log('Incomplete payment found:', payment);
-            // Here you would typically handle the incomplete payment, e.g., prompt the user to complete it
-            // For this basic example, we just log it.
+        // نطلب صلاحية username و payments (لو نريد إنشاء دفعات لاحقاً)
+        const authResp = await Pi.authenticate({ scope: ['username', 'payments'] });
+        // عادة authResp يحتوي على accessToken أو temporary token — يجب التحقق من السيرفر
+        console.log('Pi.authenticate response:', authResp);
+
+        // **تذكير أمني:** الـ accessToken يجب التحقق منه في السيرفر قبل إنشاء دفعات حقيقية.
+        user = { authResp };
+        setStatus('تم المصادقة — يمكنك الآن إنشاء دفعات. (راجع الكونسول للمخرجات)');
+      } catch (err) {
+        console.error(err);
+        setStatus('فشل المصادقة أو ألغى المستخدم العملية.');
+      }
+    });
+
+    // --- 2) إنشاء دفعة: مثال أمامي يطلب من السيرفر إنشاء دفعة ثم يفعل الـ SDK لفتح حوار الدفع ---
+    payBtn.addEventListener('click', async () => {
+      if (!user) {
+        setStatus('من فضلك سجّل الدخول أولاً بـ Pi.');
+        return;
+      }
+
+      const amount = parseFloat(amountEl.value) || 0;
+      if (amount <= 0) { setStatus('ادخل مبلغ صحيح أكبر من صفر.'); return; }
+
+      setStatus('إنشاء طلب الدفع...');
+
+      // بيانات لإرسالها للسيرفر (مثال)
+      const payload = {
+        amount,
+        donorName: donorNameEl.value || 'مجهول',
+        cause: causeEl.value,
+        // عادة سترسل هنا accessToken الذي أعطاه Pi.authenticate ليتحقق منه السيرفر:
+        accessToken: user.authResp?.accessToken || user.authResp?.token || null
+      };
+
+      try {
+        // === ملاحظة هامة ===
+        // في التطبيق الحقيقي: استبدل الرابط أدناه برابط سيرفرك
+        // السيرفر يقوم بإنشاء طلب على Pi platform (A2U) ويرجع بيانات الدفع اللازمة مثل payment_id
+        // مثال: POST /payment/approve  -> يهيئ الدفع ويُعيد object يحوي payment_id وmetadata
+        const response = await fetch('/payment/approve', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const txt = await response.text();
+          setStatus('خطأ من السيرفر عند إنشاء الدفع: ' + txt);
+          return;
         }
 
-        // Handle donation form submission
-        document.getElementById('donation-form').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent default form submission
+        const respJson = await response.json();
+        console.log('server /payment/approve response:', respJson);
 
-            const amount = parseFloat(document.getElementById('amount').value);
-            const message = document.getElementById('message').value.trim();
-            const donationMessageElement = document.getElementById('donation-message');
+        // الآن نطلب من Pi SDK فتح واجهة الدفع (الـ SDK يتعامل مع Pi Wallet لتوقيع المستخدم)
+        // الدالة قد تكون Pi.createPayment(...) أو Pi.pay(...) بحسب إصدار SDK
+        if (Pi.createPayment) {
+          setStatus('فتح واجهة Pi للمستخدم لإتمام الدفع...');
+          const payResp = await Pi.createPayment(respJson); // SDK سيعرض نافذة الدفع
+          console.log('Payment response from SDK:', payResp);
 
-            if (isNaN(amount) || amount <= 0) {
-                donationMessageElement.textContent = 'يرجى إدخال مبلغ تبرع صالح.';
-                return;
-            }
+          // بعد عودة النجاح من الـ SDK، يجب أن يُبلغ السيرفر لإتمام التسجيل / التحقق
+          await fetch('/payment/complete', {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify({ paymentResult: payResp, serverPaymentId: respJson.payment_id })
+          });
 
-            if (!piUser) {
-                donationMessageElement.textContent = 'يرجى الاتصال بـ Pi Network أولاً.';
-                return;
-            }
+          setStatus('تمت محاولة الإتمام — تحقق من السجل في السيرفر.');
+        } else {
+          // بديل للمحاكاة: لو الـ SDK لا يحتوي على createPayment بهذه النسخة
+          setStatus('SDK لا يدعم createPayment في هذه البيئة. (استخدم توثيق Pi لإنشاء الحوار عبر SDK).');
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus('حدث خطأ أثناء إنشاء/إتمام الدفع — راجع الكونسول.');
+      }
+    });
 
-            try {
-                donationMessageElement.textContent = 'جاري معالجة تبرعك...';
-                donationMessageElement.style.color = 'var(--primary-purple)';
-
-                // Create a payment
-                const payment = await window.Pi.createPayment({
-                    amount: amount,
-                    memo: message || `تبرع لمنصة DonateWay من ${piUser.username}`, // A short description of the payment
-                    metadata: {
-                        cause: 'General Donation',
-                        donor_message: message,
-                        donor_uid: piUser.uid
-                    }
-                }, {
-                    onReadyForServerApproval: function(paymentId) {
-                        // This function is called when the payment is ready to be approved by your server.
-                        // In a real application, you would send paymentId to your backend server here.
-                        // Your server would then use the Pi Payments API to complete the payment.
-                        // For this client-side only example, we'll simulate approval.
-                        console.log('Payment ready for server approval:', paymentId);
-                        donationMessageElement.textContent = 'تم إرسال طلب الدفع بنجاح إلى Pi Network. في انتظار تأكيد الدفع...';
-                        
-                        // Simulate server approval for demonstration purposes.
-                        // !!! In a real app, this MUST be handled by your backend. !!!
-                        setTimeout(() => {
-                            window.Pi.completePayment(paymentId, { txid: "simulated_txid_" + Date.now() })
-                                .then(payment => {
-                                    console.log('Simulated payment completion:', payment);
-                                    donationMessageElement.textContent = `شكرًا لتبرعك بمبلغ ${payment.amount} Pi! تم تأكيد الدفع.`;
-                                    donationMessageElement.style.color = 'green';
-                                })
-                                .catch(error => {
-                                    console.error('Simulated payment completion failed:', error);
-                                    donationMessageElement.textContent = `حدث خطأ أثناء إتمام التبرع: ${error.message}`;
-                                    donationMessageElement.style.color = 'red';
-                                });
-                        }, 2000); // Simulate network delay
-                    },
-                    onReadyForServerCompletion: function(paymentId, txid) {
-                        // This function is called when the payment is completed by the Pi Network.
-                        // Your server would typically receive a webhook for this.
-                        // For this client-side example, we just log it.
-                        console.log('Payment ready for server completion:', paymentId, txid);
-                        donationMessageElement.textContent = `تم تأكيد الدفع بنجاح مع Pi Network! رقم المعاملة: ${txid}`;
-                        donationMessageElement.style.color = 'green';
-                        // Here you might update UI or record the donation locally.
-                    },
-                    onCancel: function(paymentId) {
-                        console.log('Payment cancelled by user:', paymentId);
-                        donationMessageElement.textContent = 'تم إلغاء التبرع بواسطة المستخدم.';
-                        donationMessageElement.style.color = 'orange';
-                    },
-                    onError: function(error, payment) {
-                        console.error('Payment error:', error, payment);
-                        let errorMessage = 'حدث خطأ غير متوقع أثناء معالجة التبرع.';
-                        if (error && error.message) {
-                            errorMessage = error.message;
-                        }
-                        donationMessageElement.textContent = `فشل التبرع: ${errorMessage}`;
-                        donationMessageElement.style.color = 'red';
-                    }
-                });
-            } catch (error) {
-                console.error('Error creating Pi payment:', error);
-                donationMessageElement.textContent = `فشل بدء التبرع: ${error.message}`;
-                donationMessageElement.style.color = 'red';
-            }
-        });
-
-        // Initialize Pi connection on page load
-        window.addEventListener('load', connectToPi);
-
-        // Optional: Smooth scrolling for "Donate Now" button
-        document.querySelector('.button').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    </script>
+    // --- ملاحظات مطوّر --- 
+    // 1) ملفات السيرفر المتوقعة (نماذج):
+    //    POST /payment/approve  <- يتلقى accessToken, amount => ينادي Pi Platform لإنشاء طلب ويُعيد payment_id + payload للـ SDK.
+    //    POST /payment/complete <- يتلقى نتيجة الدفع من العميل أو يستعلم عن حالة المعاملة ثم يسجلها في DB.
+    //
+    // 2) الوثائق الرسمية للـ Pi SDK والـ payment flow توضّح أن التحقق النهائي يجب أن يكون على السيرفر (لا تعتمد على الـ client فقط). 1
+    //
+    // 3) أثناء التطوير المحلي: استخدم sandbox:true وعيّن Development URL في بوابة المطور (Developer Portal).
+  </script>
 </body>
 </html>
