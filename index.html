@@ -1,97 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Pi Chat</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f5; }
-    #chat { display: none; max-width: 400px; margin: 20px auto; background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-    #messages { height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-bottom: 10px; padding: 5px; text-align: left; }
-    .msg { margin: 5px 0; }
-    .me { color: purple; }
-    .other { color: blue; }
-    input, button { padding: 8px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
-    #searchSection { margin: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع التبرعات</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .donation-form {
+            text-align: center;
+        }
+
+        label, input, button {
+            margin-bottom: 1rem;
+            display: block;
+            width: 100%;
+        }
+
+        input {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-  <h2>Pi Chat</h2>
-  <button onclick="loginWithPi()">Login with Pi</button>
-  
-  <div id="searchSection" style="display:none;">
-    <input type="text" id="searchUser" placeholder="Enter Pi Username">
-    <button onclick="searchUser()">Search</button>
-    <p id="searchResult"></p>
-  </div>
-  
-  <div id="chat">
-    <h3 id="chatWith"></h3>
-    <div id="messages"></div>
-    <input type="text" id="msgInput" placeholder="Type a message">
-    <button onclick="sendMessage()">Send</button>
-  </div>
+    <header>
+        <div class="user-info">
+            <span id="username-display"></span>
+        </div>
+        <h1>موقع التبرعات</h1>
+    </header>
 
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script>
-    Pi.init({ version: "2.0" });
+    <main>
+        <section class="donation-form">
+            <h2>تبرع الآن</h2>
+            <form id="donate-form">
+                <label for="amount">مبلغ التبرع (Pi):</label>
+                <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
+                <button type="submit">تبرع</button>
+            </form>
+        </section>
+    </main>
 
-    let currentUser = null;
-    let chattingWith = null;
-    let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "{}");
+    <script src="https://sdk.minepi.com/pi-sdk-1.0.0.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const usernameDisplay = document.getElementById('username-display');
+            const donateForm = document.getElementById('donate-form');
 
-    async function loginWithPi() {
-      try {
-        const scopes = ['username'];
-        const auth = await Pi.authenticate(scopes, ()=>{});
-        currentUser = auth.user.username;
-        alert("Logged in as: " + currentUser);
-        document.getElementById("searchSection").style.display = "block";
-      } catch (err) {
-        console.error(err);
-      }
-    }
+            // 1. تسجيل دخول المستخدم باستخدام Pi SDK
+            pi.init({
+                onReady: (auth) => {
+                    if (auth.user) {
+                        usernameDisplay.textContent = `مرحبا, ${auth.user.username}`;
+                        console.log('مستخدم Pi مسجل دخوله:', auth.user.username);
+                    } else {
+                        usernameDisplay.textContent = 'الرجاء تسجيل الدخول';
+                        console.log('لم يتم تسجيل دخول أي مستخدم.');
+                    }
+                }
+            });
 
-    function searchUser() {
-      const user = document.getElementById("searchUser").value.trim();
-      if (!user) return;
+            // 2. معالجة نموذج التبرع عند الإرسال
+            donateForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = document.getElementById('amount').value;
 
-      if (chatHistory[user]) {
-        chattingWith = user;
-        document.getElementById("chatWith").innerText = "Chat with: " + chattingWith;
-        document.getElementById("chat").style.display = "block";
-        loadMessages();
-        document.getElementById("searchResult").innerText = "";
-      } else {
-        document.getElementById("searchResult").innerText = "User not found!";
-      }
-    }
+                if (!amount || amount <= 0) {
+                    alert('الرجاء إدخال مبلغ صحيح.');
+                    return;
+                }
 
-    function sendMessage() {
-      const msgText = document.getElementById("msgInput").value.trim();
-      if (!msgText || !chattingWith) return;
+                try {
+                    const payment = await pi.initiatePayment({
+                        amount: parseFloat(amount),
+                        memo: "تبرع لدعم الموقع",
+                        metadata: { type: 'donation' },
+                    });
 
-      if (!chatHistory[chattingWith]) {
-        chatHistory[chattingWith] = [];
-      }
+                    console.log('Payment created:', payment);
+                    if (payment.status === 'succeeded') {
+                        alert(`شكراً لك! تم التبرع بنجاح بمبلغ ${amount} Pi.`);
+                    } else {
+                        alert('فشلت عملية الدفع أو تم إلغاؤها.');
+                    }
 
-      chatHistory[chattingWith].push({ sender: currentUser, text: msgText });
-      localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      document.getElementById("msgInput").value = "";
-      loadMessages();
-    }
-
-    function loadMessages() {
-      const msgBox = document.getElementById("messages");
-      msgBox.innerHTML = "";
-      if (chatHistory[chattingWith]) {
-        chatHistory[chattingWith].forEach(m => {
-          const div = document.createElement("div");
-          div.className = "msg " + (m.sender === currentUser ? "me" : "other");
-          div.innerText = m.sender + ": " + m.text;
-          msgBox.appendChild(div);
+                } catch (error) {
+                    console.error('حدث خطأ في عملية الدفع:', error);
+                    alert('حدث خطأ أثناء معالجة التبرع.');
+                }
+            });
         });
-      }
-    }
-  </script>
+    </script>
 </body>
 </html>
