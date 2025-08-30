@@ -2,133 +2,96 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pi Chat</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    #chat-container {
-      width: 90%;
-      max-width: 500px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      height: 80vh;
-    }
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 10px;
-      padding-right: 5px;
-    }
-    .message {
-      margin: 5px 0;
-      padding: 8px 12px;
-      border-radius: 8px;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-    .me {
-      background: #d1ffd6;
-      align-self: flex-end;
-    }
-    .other {
-      background: #e4e4e4;
-      align-self: flex-start;
-    }
-    #input-container {
-      display: flex;
-      gap: 5px;
-    }
-    #msg-input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      background: #6c5ce7;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #5a4bd1;
-    }
-    #login-btn {
-      margin-bottom: 15px;
-    }
+    body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f5; }
+    #chat { display: none; max-width: 400px; margin: 20px auto; background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    #messages { height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-bottom: 10px; padding: 5px; text-align: left; }
+    .msg { margin: 5px 0; }
+    .me { color: purple; }
+    .other { color: blue; }
+    input, button { padding: 8px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
+    #searchSection { margin: 20px; }
   </style>
 </head>
 <body>
-  <button id="login-btn">Login with Pi</button>
-  <div id="chat-container" style="display:none;">
+  <h2>Pi Chat</h2>
+  <button onclick="loginWithPi()">Login with Pi</button>
+  
+  <div id="searchSection" style="display:none;">
+    <input type="text" id="searchUser" placeholder="Enter Pi Username">
+    <button onclick="searchUser()">Search</button>
+    <p id="searchResult"></p>
+  </div>
+  
+  <div id="chat">
+    <h3 id="chatWith"></h3>
     <div id="messages"></div>
-    <div id="input-container">
-      <input type="text" id="msg-input" placeholder="Type a message...">
-      <button id="send-btn">Send</button>
-    </div>
+    <input type="text" id="msgInput" placeholder="Type a message">
+    <button onclick="sendMessage()">Send</button>
   </div>
 
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script>
-    let currentUser = null;
-    let chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+    Pi.init({ version: "2.0" });
 
-    // Show saved messages
-    function renderMessages() {
-      const messagesDiv = document.getElementById("messages");
-      messagesDiv.innerHTML = "";
-      chatHistory.forEach(msg => {
-        const div = document.createElement("div");
-        div.classList.add("message");
-        div.classList.add(msg.sender === currentUser ? "me" : "other");
-        div.textContent = msg.sender + ": " + msg.text;
-        messagesDiv.appendChild(div);
-      });
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    let currentUser = null;
+    let chattingWith = null;
+    let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "{}");
+
+    async function loginWithPi() {
+      try {
+        const scopes = ['username'];
+        const auth = await Pi.authenticate(scopes, ()=>{});
+        currentUser = auth.user.username;
+        alert("Logged in as: " + currentUser);
+        document.getElementById("searchSection").style.display = "block";
+      } catch (err) {
+        console.error(err);
+      }
     }
 
-    // Send a message
-    document.getElementById("send-btn").addEventListener("click", () => {
-      const msgText = document.getElementById("msg-input").value.trim();
-      if (!msgText) return;
-      chatHistory.push({ sender: currentUser, text: msgText });
-      localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      document.getElementById("msg-input").value = "";
-      renderMessages();
-    });
+    function searchUser() {
+      const user = document.getElementById("searchUser").value.trim();
+      if (!user) return;
 
-    // Pi SDK login
-    document.getElementById("login-btn").addEventListener("click", async () => {
-      try {
-        Pi.init({ version: "2.0" });
-        const scopes = ['username'];
-        const auth = await Pi.authenticate(scopes, (payment) => {
-          console.log("Incomplete payment found", payment);
-        });
-        currentUser = auth.user.username; // username فقط
-        document.getElementById("login-btn").style.display = "none";
-        document.getElementById("chat-container").style.display = "flex";
-        renderMessages();
-      } catch (err) {
-        alert("Login failed: " + err);
+      if (chatHistory[user]) {
+        chattingWith = user;
+        document.getElementById("chatWith").innerText = "Chat with: " + chattingWith;
+        document.getElementById("chat").style.display = "block";
+        loadMessages();
+        document.getElementById("searchResult").innerText = "";
+      } else {
+        document.getElementById("searchResult").innerText = "User not found!";
       }
-    });
+    }
+
+    function sendMessage() {
+      const msgText = document.getElementById("msgInput").value.trim();
+      if (!msgText || !chattingWith) return;
+
+      if (!chatHistory[chattingWith]) {
+        chatHistory[chattingWith] = [];
+      }
+
+      chatHistory[chattingWith].push({ sender: currentUser, text: msgText });
+      localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+      document.getElementById("msgInput").value = "";
+      loadMessages();
+    }
+
+    function loadMessages() {
+      const msgBox = document.getElementById("messages");
+      msgBox.innerHTML = "";
+      if (chatHistory[chattingWith]) {
+        chatHistory[chattingWith].forEach(m => {
+          const div = document.createElement("div");
+          div.className = "msg " + (m.sender === currentUser ? "me" : "other");
+          div.innerText = m.sender + ": " + m.text;
+          msgBox.appendChild(div);
+        });
+      }
+    }
   </script>
 </body>
 </html>
