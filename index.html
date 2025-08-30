@@ -3,94 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Donate Way - تبرع بعملة Pi</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <title>Donate Way</title>
   <style>
     body {
-      font-family: "Tajawal", sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
-      background: linear-gradient(135deg, #6a0dad, #9b30ff);
-      color: #fff;
-      padding: 50px 20px;
+      background: #f9f9ff;
+      padding: 50px;
     }
     h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
+      color: #6a0dad;
     }
     button {
-      background: #fff;
-      color: #6a0dad;
+      background: #6a0dad;
+      color: #fff;
       border: none;
-      padding: 15px 30px;
-      border-radius: 10px;
+      padding: 15px 25px;
+      border-radius: 8px;
       font-size: 18px;
       cursor: pointer;
       transition: 0.3s;
-      margin: 10px;
+      margin-top: 15px;
+      display: block;
+      width: 220px;
+      margin-left: auto;
+      margin-right: auto;
     }
     button:hover {
-      background: #f1e6ff;
+      background: #520a8a;
     }
-    #result {
-      margin-top: 25px;
-      padding: 20px;
-      background: rgba(255,255,255,0.15);
+    .card {
+      background: #fff;
+      padding: 30px;
       border-radius: 12px;
-      text-align: left;
-      direction: ltr;
-      font-size: 16px;
-      white-space: pre-line;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
     }
   </style>
 </head>
 <body>
-  <h1>Donate Way - تبرع بعملة Pi</h1>
-  <p>سجل دخولك عبر Pi Network للمتابعة</p>
-  <button onclick="loginWithPi()">🔑 تسجيل الدخول</button>
-
-  <div id="result"></div>
-  <div id="payBtn"></div>
+  <div class="card">
+    <h1>Donate Way 💜</h1>
+    <p>ادفع 1 Pi مباشرة عبر المحفظة</p>
+    <button onclick="pay()">💜 ادفع عبر wallet.pinet.com</button>
+  </div>
 
   <script>
-    // تهيئة SDK
-    Pi.init({ version: "2.0" });
-
-    // زر تسجيل الدخول
-    async function loginWithPi() {
-      try {
-        const scopes = ['payments']; 
-        const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-        
-        // عرض بيانات المستخدم بعد تسجيل الدخول
-        document.getElementById("result").innerText =
-          "👤 المستخدم: " + auth.user.username + "\n" +
-          "🆔 رقم الحساب: " + auth.user.uid;
-
-        // إضافة زر الدفع بعد تسجيل الدخول
-        document.getElementById("payBtn").innerHTML = `
-          <button onclick="payWithPi()">💜 ادفع الآن 1 Pi</button>
-        `;
-
-      } catch (err) {
-        console.error(err);
-        alert("فشل تسجيل الدخول");
-      }
-    }
-
-    // معالجة المعاملات غير المكتملة
-    function onIncompletePaymentFound(payment) {
-      console.log("معاملة غير مكتملة:", payment);
-    }
-
-    // زر الدفع عبر wallet.pi
-    function payWithPi() {
+    function pay() {
       const address = "GBS27QZJP3RLL4D63Z3523BTY272KUPJE3OFQWA67DASMOH4NIZI2CEP";
       const amount = 1;
-      const memo = "DonateWay Payment";
-      const txid = Date.now(); // معرف فريد
 
-      const paymentUrl = `pi://payment/${address}?amount=${amount}&memo=${memo}&txid=${txid}`;
-      window.location.href = paymentUrl;
+      // فتح موقع المحفظة الرسمي
+      window.open("https://wallet.pinet.com", "_blank");
+
+      // عرض بيانات التحويل للمستخدم
+      alert(`قم بتحويل ${amount} Pi إلى العنوان:\n\n${address}`);
     }
   </script>
 </body>
