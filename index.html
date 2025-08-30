@@ -7,141 +7,128 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      background: #f4f4f9;
       margin: 0;
-    }
-    .chat-container {
-      width: 100%;
-      max-width: 500px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      padding: 0;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    .chat-header {
-      background: #6a0dad;
-      color: white;
+    #chat-container {
+      width: 90%;
+      max-width: 500px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
       padding: 15px;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
     }
-    .chat-messages {
+    #messages {
       flex: 1;
-      padding: 10px;
       overflow-y: auto;
+      margin-bottom: 10px;
+      padding-right: 5px;
     }
-    .chat-messages div {
+    .message {
       margin: 5px 0;
       padding: 8px 12px;
-      border-radius: 5px;
+      border-radius: 8px;
       max-width: 80%;
+      word-wrap: break-word;
     }
-    .chat-messages .me {
-      background: #d1b3ff;
+    .me {
+      background: #d1ffd6;
       align-self: flex-end;
-      text-align: right;
     }
-    .chat-messages .other {
-      background: #eee;
+    .other {
+      background: #e4e4e4;
       align-self: flex-start;
     }
-    .chat-input {
+    #input-container {
       display: flex;
-      border-top: 1px solid #ccc;
+      gap: 5px;
     }
-    .chat-input input {
+    #msg-input {
       flex: 1;
       padding: 10px;
-      border: none;
-      outline: none;
+      border: 1px solid #ddd;
+      border-radius: 8px;
     }
-    .chat-input button {
-      padding: 10px 20px;
-      background: #6a0dad;
-      color: white;
+    button {
+      padding: 10px 15px;
       border: none;
+      border-radius: 8px;
+      background: #6c5ce7;
+      color: #fff;
       cursor: pointer;
     }
-    .chat-input button:hover {
-      background: #5a0cab;
+    button:hover {
+      background: #5a4bd1;
+    }
+    #login-btn {
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
-
-<div class="chat-container">
-  <div class="chat-header">
-    Pi Chat
-    <button id="loginBtn" style="float:right; background:#fff; color:#6a0dad; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">
-      Login with Pi
-    </button>
+  <button id="login-btn">Login with Pi</button>
+  <div id="chat-container" style="display:none;">
+    <div id="messages"></div>
+    <div id="input-container">
+      <input type="text" id="msg-input" placeholder="Type a message...">
+      <button id="send-btn">Send</button>
+    </div>
   </div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input">
-    <input type="text" id="msgInput" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
-  </div>
-</div>
 
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-  let currentUser = null;
-  let chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    let currentUser = null;
+    let chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
 
-  // تحميل الرسائل عند فتح الموقع
-  function loadMessages() {
-    const chatBox = document.getElementById("chatMessages");
-    chatBox.innerHTML = "";
-    chatHistory.forEach(msg => {
-      const div = document.createElement("div");
-      div.className = msg.sender === currentUser ? "me" : "other";
-      div.textContent = msg.sender + ": " + msg.text;
-      chatBox.appendChild(div);
-    });
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+    // Show saved messages
+    function renderMessages() {
+      const messagesDiv = document.getElementById("messages");
+      messagesDiv.innerHTML = "";
+      chatHistory.forEach(msg => {
+        const div = document.createElement("div");
+        div.classList.add("message");
+        div.classList.add(msg.sender === currentUser ? "me" : "other");
+        div.textContent = msg.sender + ": " + msg.text;
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
 
-  // إرسال رسالة
-  function sendMessage() {
-    const msgInput = document.getElementById("msgInput");
-    const msgText = msgInput.value.trim();
-    if (msgText && currentUser) {
-      const msg = { sender: currentUser, text: msgText };
-      chatHistory.push(msg);
+    // Send a message
+    document.getElementById("send-btn").addEventListener("click", () => {
+      const msgText = document.getElementById("msg-input").value.trim();
+      if (!msgText) return;
+      chatHistory.push({ sender: currentUser, text: msgText });
       localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-      msgInput.value = "";
-      loadMessages();
-    } else {
-      alert("Please login with Pi first!");
-    }
-  }
+      document.getElementById("msg-input").value = "";
+      renderMessages();
+    });
 
-  // تسجيل الدخول بـ Pi SDK
-  async function loginWithPi() {
-    try {
-      const scopes = ['username'];
-      const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-      currentUser = auth.user.username;  // هنا بناخد الاسم بس
-      alert("Logged in as: " + currentUser);
-      loadMessages();
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  function onIncompletePaymentFound(payment) {
-    console.log("Incomplete payment found", payment);
-  }
-
-  document.getElementById("loginBtn").addEventListener("click", loginWithPi);
-
-  loadMessages();
-</script>
-
+    // Pi SDK login
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      try {
+        Pi.init({ version: "2.0" });
+        const scopes = ['username'];
+        const auth = await Pi.authenticate(scopes, (payment) => {
+          console.log("Incomplete payment found", payment);
+        });
+        currentUser = auth.user.username; // username فقط
+        document.getElementById("login-btn").style.display = "none";
+        document.getElementById("chat-container").style.display = "flex";
+        renderMessages();
+      } catch (err) {
+        alert("Login failed: " + err);
+      }
+    });
+  </script>
 </body>
 </html>
