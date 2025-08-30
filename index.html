@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>موقع التبرعات - Pi Testnet</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f0ff;font-family:sans-serif;direction:rtl}
+  .card{background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.1);width:100%;max-width:750px;text-align:center}
+  h1{margin-top:0;color:#6b2fb1}
+  input{flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+  button{background:#6b2fb1;color:#fff;border:0;padding:10px 16px;border-radius:8px;font-weight:bold;cursor:pointer}
+  .row{display:flex;gap:10px;margin-bottom:16px}
+  .ok{border:2px solid #2fa84f;padding:16px;border-radius:10px;background:#f0fff7;color:#000;margin-top:10px}
+  .error{color:#c00;margin-top:10px}
+  .label{font-weight:bold;color:#6b2fb1}
+  table{width:100%;border-collapse:collapse;margin-top:20px}
+  th,td{border:1px solid #ddd;padding:8px;text-align:center}
+  th{background:#eee}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>💜 التبرعات عبر Pi Testnet</h1>
+
+    <div id="userSection">
+      <button id="loginBtn">🔑 تسجيل الدخول بحساب Pi</button>
+    </div>
+
+    <div id="donationSection" style="display:none;">
+      <p>أدخل <b>Transaction Hash</b> ليتم التحقق من الدفع لمحفظة التبرعات.</p>
+      <div class="row">
+        <input id="txInput" type="text" placeholder="ضع هنا tx hash" />
+        <button id="checkBtn">تحقق</button>
+      </div>
+      <div id="result"></div>
+
+      <h3>📋 سجل التبرعات</h3>
+      <table>
+        <thead><tr><th>المتبرع</th><th>المبلغ (Pi)</th><th>المُرسل</th><th>الهاش</th></tr></thead>
+        <tbody id="donationsList"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+const TARGET_WALLET = "GBS27QZJP3RLL4D63Z3523BTY272KUPJE3OFQWA67DASMOH4NIZI2CEP"; 
+
+const loginBtn = document.getElementById('loginBtn');
+const userSection = document.getElementById('userSection');
+const donationSection = document.getElementById('donationSection');
+const checkBtn = document.getElementById('checkBtn');
+const txInput = document.getElementById('txInput');
+const resultDiv = document.getElementById('result');
+const donationsList = document.getElementById('donationsList');
+
+let currentUser = null;
+
+// 🔐 تسجيل الدخول عبر Pi SDK
+loginBtn.addEventListener('click', async () => {
+  try {
+    const scopes = ['username','payments']; // الصلاحيات المطلوبة
+    const authRes = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+    currentUser = authRes.user.username;
+
+    userSection.innerHTML = `<p>👋 مرحباً <b>${currentUser}</b></p>`;
+    donationSection.style.display = "block";
+    loadDonations();
+  } catch (err) {
+    alert("❌ فشل تسجيل الدخول: " + err.message);
+  }
+});
+
+// ✅ التحقق من المعاملة
+async function checkTx(){
+  const hash = txInput.value.trim();
+  if(!hash){ resultDiv.innerHTML='<p class="error">✋ أدخل Hash أولاً</p>'; return; }
+
+  resultDiv.textContent = "⏳ جاري البحث...";
+  try{
+    const txUrl = `https://api.testnet.minepi.com/transactions/${hash}`;
+    const txRes = await fetch(txUrl);
+    if(!txRes.ok){ resultDiv.innerHTML=`<p class="error">⚠️ المعاملة غير موجودة (HTTP ${txRes.status})</p>`; return; }
+    const txData = await txRes.json();
+    if(!txData.successful){ resultDiv.innerHTML = `<p class="error">⚠️ المعاملة فشلت</p>`; return; }
+
+    const opUrl = `${txUrl}/operations`;
+    const opRes = await fetch(opUrl);
+    if(!opRes.ok){ resultDiv.innerHTML=`<p class="error">⚠️ لم استطع تحميل العمليات</p>`; return; }
+    const opData = await opRes.json();
+
+    let found = false;
+    if(opData._embedded && opData._embedded.records){
+      for(const op of opData._embedded.records){
+        if(op.type === "payment" && op.to === TARGET_WALLET){
+          found = true;
+          resultDiv.innerHTML = `
+            <div class="ok">
+              <h3>✅ تم التبرع بنجاح</h3>
+              <p><span class="label">المُرسِل:</span> ${op.from}</p>
+              <p><span class="label">المُستقبِل:</span> ${op.to}</p>
+              <p><span class="label">المبلغ:</span> ${op.amount} Pi</p>
+            </div>`;
+
+          // 📝 حفظ التبرع محلياً مع اسم المستخدم من Pi
+          saveDonation({
+            user: currentUser,
+            amount: op.amount,
+            from: op.from,
+            hash: hash
+          });
+
+          loadDonations();
+          break;
+        }
+      }
+    }
+
+    if(!found){
+      resultDiv.innerHTML = `<p class="error">⚠️ المعاملة موجودة لكنها ليست للمحفظة الصحيحة.</p>`;
+    }
+
+  }catch(err){
+    resultDiv.innerHTML = `<p class="error">⚠️ خطأ: ${err.message}</p>`;
+  }
+}
+
+checkBtn.addEventListener('click', checkTx);
+txInput.addEventListener('keydown', e=>{ if(e.key==="Enter") checkTx(); });
+
+// 🗂️ التخزين المحلي للتبرعات
+function saveDonation(donation){
+  let donations = JSON.parse(localStorage.getItem('donations') || "[]");
+  donations.push(donation);
+  localStorage.setItem('donations', JSON.stringify(donations));
+}
+
+function loadDonations(){
+  donationsList.innerHTML = "";
+  let donations = JSON.parse(localStorage.getItem('donations') || "[]");
+  donations.forEach(d=>{
+    donationsList.innerHTML += `<tr>
+      <td>${d.user}</td>
+      <td>${d.amount}</td>
+      <td>${d.from}</td>
+      <td>${d.hash}</td>
+    </tr>`;
+  });
+}
+
+// 🔎 مطلوب من SDK (وظيفة Callback للمدفوعات الغير مكتملة)
+function onIncompletePaymentFound(payment){
+  console.log("🔔 دفعة غير مكتملة:", payment);
+}
+</script>
+</body>
+</html>
