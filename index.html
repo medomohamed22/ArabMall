@@ -3,144 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع التبرعات</title>
+    <title>Donate Way - موقع التبرعات</title>
     <style>
+        /* CSS Styles */
+        :root {
+            --primary-color: #6a1b9a; /* Purple */
+            --secondary-color: #ffffff; /* White */
+            --text-color: #000000;
+            --bg-color: #f4f4f4;
+            --accent-color: #9c27b0;
+        }
+
+        body.dark-mode {
+            --primary-color: #ab47bc;
+            --secondary-color: #212121;
+            --text-color: #ffffff;
+            --bg-color: #121212;
+            --accent-color: #ce93d8;
+        }
+
         body {
-            direction: rtl;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            color: #333;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         header {
-            background-color: #007bff;
-            color: white;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            padding: 20px;
+            text-align: center;
+            position: relative;
         }
 
-        .user-info {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        h1 {
+        header h1 {
             margin: 0;
+            font-size: 2em;
         }
 
-        main {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 1rem;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        #mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: var(--secondary-color);
+            transition: transform 0.3s;
         }
 
-        .donation-form {
+        #mode-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: var(--accent-color);
+            padding: 10px;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            margin: 0 15px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        nav button:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        section {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #dashboard, #transparency {
+            display: none;
+        }
+
+        .donation-counter {
+            text-align: center;
+            font-size: 2em;
+            margin: 20px 0;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .project-progress {
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            background-color: var(--primary-color);
+            height: 20px;
+            transition: width 0.5s;
+        }
+
+        button.donate-btn {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1em;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button.donate-btn:hover {
+            background-color: var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        #donation-history {
+            list-style: none;
+            padding: 0;
+        }
+
+        #donation-history li {
+            background: var(--secondary-color);
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            background: gold;
+            color: black;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin: 5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+            }
+
+            nav button {
+                margin: 10px 0;
+            }
+        }
+
+        /* Reports Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid var(--text-color);
+            padding: 10px;
             text-align: center;
         }
 
-        label, input, button {
-            margin-bottom: 1rem;
-            display: block;
-            width: 100%;
-        }
-
-        input {
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 0.75rem;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #218838;
+        th {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="user-info">
-            <span id="username-display"></span>
-        </div>
-        <h1>موقع التبرعات</h1>
+        <h1>Donate Way</h1>
+        <button id="mode-toggle">🌙</button>
     </header>
+    <nav>
+        <button onclick="showSection('home')">الرئيسية</button>
+        <button onclick="showSection('dashboard')">لوحة التحكم</button>
+        <button onclick="showSection('transparency')">الشفافية</button>
+    </nav>
 
-    <main>
-        <section class="donation-form">
-            <h2>تبرع الآن</h2>
-            <form id="donate-form">
-                <label for="amount">مبلغ التبرع (Pi):</label>
-                <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
-                <button type="submit">تبرع</button>
-            </form>
-        </section>
-    </main>
+    <section id="home" style="display: block;">
+        <h2>مرحباً بك في Donate Way</h2>
+        <p>تبرع الآن لدعم المشاريع الإنسانية.</p>
+        <div class="donation-counter">إجمالي التبرعات: <span id="total-donations">0</span> Pi</div>
+        <button class="donate-btn" onclick="initiateDonation()">تبرع الآن عبر Pi Network</button>
+    </section>
 
-    <script src="https://sdk.minepi.com/pi-sdk-1.0.0.js"></script>
+    <section id="dashboard">
+        <h2>لوحة تحكم المتبرع</h2>
+        <p>إجمالي مساهماتك: <span id="user-total">0</span> Pi</p>
+        <h3>تبرعات سابقة:</h3>
+        <ul id="donation-history"></ul>
+        <h3>البادجات:</h3>
+        <div id="badges"></div>
+        <button onclick="generateCertificate()">إصدار شهادة شكر</button>
+    </section>
+
+    <section id="transparency">
+        <h2>الشفافية والمتابعة</h2>
+        <div class="donation-counter">عداد التبرعات المباشر: <span id="live-counter">0</span> Pi</div>
+        <h3>تقارير أسبوعية وشهرية:</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>الفترة</th>
+                    <th>التبرعات</th>
+                    <th>الصرف</th>
+                </tr>
+            </thead>
+            <tbody id="reports"></tbody>
+        </table>
+        <h3>متابعة المشاريع:</h3>
+        <div class="project-progress">
+            <p>بناء مدرسة – <span>70%</span> مكتمل</p>
+            <div class="progress-bar"><div class="progress" style="width: 70%;"></div></div>
+        </div>
+        <!-- Add more projects as needed -->
+    </section>
+
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const usernameDisplay = document.getElementById('username-display');
-            const donateForm = document.getElementById('donate-form');
+        // Pi SDK Initialization
+        Pi.init({ version: "2.0", sandbox: false}); // Use sandbox for testing
 
-            // 1. تسجيل دخول المستخدم باستخدام Pi SDK
-            pi.init({
-                onReady: (auth) => {
-                    if (auth.user) {
-                        usernameDisplay.textContent = `مرحبا, ${auth.user.username}`;
-                        console.log('مستخدم Pi مسجل دخوله:', auth.user.username);
-                    } else {
-                        usernameDisplay.textContent = 'الرجاء تسجيل الدخول';
-                        console.log('لم يتم تسجيل دخول أي مستخدم.');
-                    }
-                }
-            });
+        // JS Functionality
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
 
-            // 2. معالجة نموذج التبرع عند الإرسال
-            donateForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const amount = document.getElementById('amount').value;
-
-                if (!amount || amount <= 0) {
-                    alert('الرجاء إدخال مبلغ صحيح.');
-                    return;
-                }
-
-                try {
-                    const payment = await pi.initiatePayment({
-                        amount: parseFloat(amount),
-                        memo: "تبرع لدعم الموقع",
-                        metadata: { type: 'donation' },
-                    });
-
-                    console.log('Payment created:', payment);
-                    if (payment.status === 'succeeded') {
-                        alert(`شكراً لك! تم التبرع بنجاح بمبلغ ${amount} Pi.`);
-                    } else {
-                        alert('فشلت عملية الدفع أو تم إلغاؤها.');
-                    }
-
-                } catch (error) {
-                    console.error('حدث خطأ في عملية الدفع:', error);
-                    alert('حدث خطأ أثناء معالجة التبرع.');
-                }
-            });
+        // Dark/Light Mode Toggle
+        const modeToggle = document.getElementById('mode-toggle');
+        modeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            modeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
         });
+
+        // Mock Data and Local Storage
+        let totalDonations = parseFloat(localStorage.getItem('totalDonations') || 0);
+        let userDonations = JSON.parse(localStorage.getItem('userDonations') || '[]');
+        let userTotal = userDonations.reduce((sum, d) => sum + d.amount, 0);
+
+        function updateUI() {
+            document.getElementById('total-donations').textContent = totalDonations.toFixed(2);
+            document.getElementById('live-counter').textContent = totalDonations.toFixed(2);
+            document.getElementById('user-total').textContent = userTotal.toFixed(2);
+
+            const historyList = document.getElementById('donation-history');
+            historyList.innerHTML = '';
+            userDonations.forEach(d => {
+                const li = document.createElement('li');
+                li.textContent = `تبرع بـ ${d.amount} Pi في ${d.date}`;
+                historyList.appendChild(li);
+            });
+
+            // Badges
+            const badgesDiv = document.getElementById('badges');
+            badgesDiv.innerHTML = '';
+            if (userTotal > 10) badgesDiv.innerHTML += '<span class="badge">متبرع برونزي</span>';
+            if (userTotal > 50) badgesDiv.innerHTML += '<span class="badge">متبرع فضي</span>';
+            if (userTotal > 100) badgesDiv.innerHTML += '<span class="badge">متبرع ذهبي</span>';
+
+            // Reports (Mock)
+            const reportsBody = document.getElementById('reports');
+            reportsBody.innerHTML = `
+                <tr><td>أسبوعي</td><td>50 Pi</td><td>40 Pi على المشاريع</td></tr>
+                <tr><td>شهري</td><td>200 Pi</td><td>180 Pi على المشاريع</td></tr>
+            `;
+        }
+
+        // Simulate Live Counter
+        setInterval(() => {
+            if (Math.random() > 0.8) {
+                totalDonations += Math.random() * 10;
+                localStorage.setItem('totalDonations', totalDonations);
+                updateUI();
+            }
+        }, 5000);
+
+        // Initiate Donation with Pi Network
+        async function initiateDonation() {
+            try {
+                const scopes = ['username', 'payments'];
+                function onIncompletePaymentFound(payment) {
+                    console.log('Incomplete payment:', payment);
+                    // Handle incomplete payment if needed
+                }
+
+                const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                console.log('Authenticated:', authResult);
+
+                const paymentData = {
+                    amount: 1.0, // Example amount in Pi
+                    memo: "Donation to Donate Way",
+                    metadata: { donationId: Date.now() },
+                };
+
+                const callbacks = {
+                    onReadyForServerApproval: function(paymentId) {
+                        console.log('Ready for approval:', paymentId);
+                        // Normally send to your server to approve
+                    },
+                    onReadyForServerCompletion: function(paymentId, txid) {
+                        console.log('Ready for completion:', paymentId, txid);
+                        // Normally send to your server to complete
+                        // Simulate success
+                        completeDonation(1.0); // Assuming amount from paymentData
+                    },
+                    onCancel: function(paymentId) {
+                        console.log('Payment cancelled:', paymentId);
+                    },
+                    onError: function(error, payment) {
+                        console.error('Payment error:', error, payment);
+                    },
+                };
+
+                Pi.createPayment(paymentData, callbacks);
+            } catch (error) {
+                console.error('Authentication/Payment error:', error);
+            }
+        }
+
+        function completeDonation(amount) {
+            totalDonations += amount;
+            userTotal += amount;
+            userDonations.push({ amount, date: new Date().toLocaleString() });
+            localStorage.setItem('totalDonations', totalDonations);
+            localStorage.setItem('userDonations', JSON.stringify(userDonations));
+            updateUI();
+            alert('تم التبرع بنجاح!');
+        }
+
+        function generateCertificate() {
+            alert('شهادة شكر: شكراً لتبرعاتك البالغة ' + userTotal.toFixed(2) + ' Pi');
+            // In real, generate PDF or image
+        }
+
+        updateUI();
     </script>
 </body>
 </html>
