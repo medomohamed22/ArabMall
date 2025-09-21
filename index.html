@@ -127,7 +127,7 @@ input[type="number"], input[type="text"]{padding:10px;border-radius:10px;border:
         </div>
         <div style="margin-top:12px">
           <div class="small">إجمالي التبرعات اليوم</div>
-          <h3 style="margin:6px 0;color:var(--purple-600)">EGP 28,420</h3>
+          <h3 style="margin:6px 0;color:var(--purple-600)">pi 28,420</h3>
           <button class="donate" onclick="openDonateQuick(0)">تبرع سريع</button>
         </div>
       </div>
@@ -150,7 +150,7 @@ input[type="number"], input[type="text"]{padding:10px;border-radius:10px;border:
       <h4 id="modalTitle">تبرع للحملة</h4>
       <div id="modalCampaignName" class="small" style="margin-bottom:8px;color:var(--muted)"></div>
       <div class="field">
-        <label class="small">المبلغ (EGP)</label>
+        <label class="small">المبلغ (pi)</label>
         <input type="number" id="donationAmount" min="1" value="50">
       </div>
       <div class="field">
@@ -212,7 +212,7 @@ input[type="number"], input[type="text"]{padding:10px;border-radius:10px;border:
     }
 
     function formatMoney(n){
-      return 'EGP ' + n.toLocaleString('en-US');
+      return 'pi ' + n.toLocaleString('en-US');
     }
 
     // عرض أول مرة
@@ -279,7 +279,7 @@ input[type="number"], input[type="text"]{padding:10px;border-radius:10px;border:
     document.getElementById('createCampaignBtn').addEventListener('click', ()=>{
       const title = prompt('اسم الحملة'); if(!title) return;
       const desc = prompt('وصف موجز للحملة')||'';
-      const goal = Number(prompt('الهدف (EGP)')||0); if(!goal) return alert('ادخل هدف صالح');
+      const goal = Number(prompt('الهدف (pi)')||0); if(!goal) return alert('ادخل هدف صالح');
       const id = Math.max(...campaigns.map(c=>c.id))+1;
       campaigns.unshift({id,title,desc,goal:goal,raised:0,image:''});
       renderCampaigns(campaigns);
