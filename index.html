@@ -44,7 +44,14 @@
         .campaign-title { font-size: 26px; margin-bottom: 12px; color: #fff; }
         .campaign-desc { font-size: 15px; opacity: 0.9; margin-bottom: 20px; line-height: 1.6; }
 
-        .donate-options { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+        .donate-options {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
         .amount-btn {
             background: rgba(255, 255, 255, 0.2);
@@ -54,6 +61,35 @@
         }
         .amount-btn:hover { background: rgba(255, 255, 255, 0.4); transform: scale(1.12); }
         .amount-btn.selected { background: #fff; color: #764ba2; font-weight: bold; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+
+        .custom-amount {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .custom-input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 50px;
+            border: none;
+            width: 150px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .custom-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .custom-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+        }
 
         button.donate {
             background: #fff; color: #764ba2; border: none; padding: 14px 30px;
@@ -75,6 +111,7 @@
             .campaign-title { font-size: 24px; } .campaign-desc { font-size: 14px; }
             .amount-btn { padding: 8px 14px; font-size: 14px; } button.donate { padding: 12px 25px; font-size: 16px; }
             .campaign-img { height: 160px; }
+            .custom-input { width: 120px; font-size: 15px; }
         }
         @media (max-width: 480px) {
             .container { padding: 10px; } .donate-options { gap: 8px; }
@@ -92,7 +129,7 @@
         ];
 
         let selectedAmounts = {};
-        campaigns.forEach(camp => { selectedAmounts[camp.id] = 10; });
+        campaigns.forEach(camp => { selectedAmounts[camp.id] = 10; }); // افتراضي 10
 
         async function authenticate() {
             try {
@@ -109,20 +146,40 @@
 
         function selectAmount(campaignId, amount) {
             selectedAmounts[campaignId] = amount;
+            // إزالة التحديد من كل الأزرار في هذه الحملة
             document.querySelectorAll(`.amount-btn[data-campaign="${campaignId}"]`).forEach(btn => btn.classList.remove('selected'));
             event.target.classList.add('selected');
+            // إفراغ حقل المبلغ المخصص
+            const customInput = document.getElementById(`custom-${campaignId}`);
+            if (customInput) customInput.value = '';
+        }
+
+        function useCustomAmount(campaignId) {
+            const input = document.getElementById(`custom-${campaignId}`);
+            const value = parseFloat(input.value);
+            if (isNaN(value) || value <= 0) {
+                alert("أدخل مبلغ صحيح أكبر من صفر (مثل 0.001 أو 1.5)");
+                return;
+            }
+            selectedAmounts[campaignId] = value;
+            // إزالة التحديد من الأزرار الثابتة
+            document.querySelectorAll(`.amount-btn[data-campaign="${campaignId}"]`).forEach(btn => btn.classList.remove('selected'));
         }
 
         async function donateWithPi(campaignId) {
-            const campaign = campaigns.find(c => c.id === campaignId);
             const amount = selectedAmounts[campaignId];
 
-            if (amount <= 0) { alert("اختر مبلغ تبرع صحيح"); return; }
+            if (!amount || amount <= 0) {
+                alert("اختر أو أدخل مبلغ تبرع صحيح");
+                return;
+            }
+
+            const campaign = campaigns.find(c => c.id === campaignId);
 
             const paymentData = {
                 amount: amount,
-                memo: `تبرع لـ ${campaign.title} (Testnet) - شكراً على دعمك ❤️`,
-                metadata: { campaign_id: campaign.id, type: "donation_test" }
+                memo: `تبرع بـ ${amount} Pi لـ ${campaign.title} - شكراً على دعمك ❤️`,
+                metadata: { campaign_id: campaign.id, amount: amount, type: "custom_donation_test" }
             };
 
             const callbacks = {
@@ -146,13 +203,13 @@
                     .then(data => {
                         console.log("Completion Response:", data);
                         if (data.status === "success") {
-                            alert(`شكراً على تبرعك بـ ${amount} Test-Pi لحملة "${campaign.title}"! ❤️`);
+                            alert(`شكراً جزيلاً على تبرعك بـ ${amount} Test-Pi لحملة "${campaign.title}"! ❤️`);
                         }
                     })
                     .catch(err => console.error("Completion Error:", err));
                 },
                 onCancel: () => alert("تم إلغاء التبرع"),
-                onError: (error) => { console.error("Pi Error:", error); alert("خطأ في الدفع. تحقق من الـ console."); }
+                onError: (error) => { console.error("Pi Error:", error); alert("حدث خطأ في عملية الدفع. جرب مرة أخرى."); }
             };
 
             Pi.createPayment(paymentData, callbacks);
@@ -168,12 +225,19 @@
                     <img src="${camp.img}" alt="${camp.title}" class="campaign-img" loading="lazy">
                     <h2 class="campaign-title">${camp.title}</h2>
                     <p class="campaign-desc">${camp.desc}</p>
+                    
                     <div class="donate-options">
                         <button class="amount-btn selected" data-campaign="${camp.id}" onclick="selectAmount('${camp.id}', 5)">5 Pi</button>
                         <button class="amount-btn" data-campaign="${camp.id}" onclick="selectAmount('${camp.id}', 10)">10 Pi</button>
                         <button class="amount-btn" data-campaign="${camp.id}" onclick="selectAmount('${camp.id}', 50)">50 Pi</button>
                         <button class="amount-btn" data-campaign="${camp.id}" onclick="selectAmount('${camp.id}', 100)">100 Pi</button>
                     </div>
+                    
+                    <div class="custom-amount">
+                        <input type="number" step="0.001" min="0.001" id="custom-${camp.id}" class="custom-input" placeholder="مبلغ مخصص (مثل 0.001)">
+                        <button class="amount-btn" onclick="useCustomAmount('${camp.id}')">استخدام</button>
+                    </div>
+                    
                     <button class="donate" onclick="donateWithPi('${camp.id}')">تبرع الآن بـ Test-Pi</button>
                 `;
                 container.appendChild(card);
@@ -194,6 +258,7 @@
 
         <div class="note">
             <strong>ملاحظة:</strong> هذا الموقع للتجربة على <strong>Testnet</strong> فقط.<br>
+            يمكنك كتابة أي مبلغ تريده مثل 0.001 أو 1.5 أو 999 Pi.<br>
             افتح في <strong>Pi Browser</strong> واستخدم <strong>Test-Pi</strong>.
         </div>
 
