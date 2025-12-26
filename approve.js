@@ -8,7 +8,7 @@ exports.handler = async (event) => {
     const { paymentId } = JSON.parse(event.body || '{}');
     if (!paymentId) return { statusCode: 400, body: JSON.stringify({ status: 'error', message: 'Missing paymentId' }) };
     
-    const apiKey = 'upxjhc6qmawgpzoqvtrjxqpc18gynacrltot4c4w9w1ehre769ire4jemfhd8bzi'; // ← غيّر ده بالـ API Key الحقيقي
+    const apiKey = 'zefq2hwvkkmjblju1xt9v0xys8vyrjhh4ahfhq9bqb4ynqxv3gtbbey3gd4s1rhr'; // ← غيّر ده بالـ API Key الحقيقي
     
     try {
         const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
