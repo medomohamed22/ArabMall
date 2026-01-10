@@ -19,12 +19,14 @@ p.intro{font-size:19px;color:#7b1fa2;opacity:0.9;max-width:800px;margin:0 auto 3
 .campaign-card:hover{transform:translateY(-15px);box-shadow:0 20px 40px rgba(126,87,194,0.25);}
 .icon{font-size:60px;margin-bottom:20px;color:#9c27b0;}
 .campaign-title{font-size:26px;color:#6a1b9a;margin-bottom:15px;font-weight:600;}
-.campaign-desc{font-size:16px;color:#7b1fa2;line-height:1.7;margin-bottom:25px;}
-.donate-options{display:flex;justify-content:center;gap:12px;margin:25px 0;flex-wrap:wrap;}
+.campaign-desc{font-size:16px;color:#7b1fa2;line-height:1.7;margin-bottom:15px;}
+.progress-container{background:#ede7f6;border-radius:50px;overflow:hidden;height:20px;margin-bottom:15px;}
+.progress-bar{height:20px;background:#7e57c2;width:0%;color:white;font-weight:bold;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.donate-options{display:flex;justify-content:center;gap:12px;margin:15px 0;flex-wrap:wrap;}
 .amount-btn{background:#ede7f6;border:2px solid #b39ddb;color:#6a1b9a;padding:10px 18px;font-size:15px;border-radius:50px;cursor:pointer;transition:all 0.3s ease;min-width:75px;font-weight:500;}
 .amount-btn:hover{background:#b39ddb;color:white;transform:scale(1.1);}
 .amount-btn.selected{background:#7e57c2;color:white;border-color:#7e57c2;box-shadow:0 5px 15px rgba(126,87,194,0.4);}
-.custom-amount{display:flex;justify-content:center;gap:12px;margin:25px 0;flex-wrap:wrap;align-items:center;}
+.custom-amount{display:flex;justify-content:center;gap:12px;margin:15px 0;flex-wrap:wrap;align-items:center;}
 .custom-input{padding:12px 20px;font-size:16px;border-radius:50px;border:2px solid #b39ddb;width:180px;text-align:center;background:white;color:#4a148c;}
 .custom-input::placeholder{color:#9575cd;}
 .custom-input:focus{outline:none;border-color:#7e57c2;box-shadow:0 0 0 3px rgba(126,87,194,0.2);}
@@ -46,25 +48,25 @@ footer{text-align:center;margin-top:70px;font-size:14px;color:#7b1fa2;opacity:0.
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <div class="logo">π</div>
-        <h1>Donate Way</h1>
-        <p class="intro"></p>
-        <div id="user"></div>
-    </div>
+<div class="header">
+    <div class="logo">π</div>
+    <h1>Donate Way</h1>
+    <p class="intro"></p>
+    <div id="user"></div>
+</div>
 
-    <div id="campaigns" class="campaigns"></div>
+<div id="campaigns" class="campaigns"></div>
 
-    <div class="message-box" id="messageBox"></div>
-    <div class="note"></div>
+<div class="message-box" id="messageBox"></div>
+<div class="note"></div>
 
-    <div id="dashboard">
-        <h2>لوحة تحكم المتبرع</h2>
-        <ul id="donation-list"></ul>
-        <div class="total-donations"></div>
-    </div>
+<div id="dashboard">
+    <h2>لوحة تحكم المتبرع</h2>
+    <ul id="donation-list"></ul>
+    <div class="total-donations"></div>
+</div>
 
-    <footer></footer>
+<footer></footer>
 </div>
 
 <script>
@@ -81,10 +83,10 @@ const t = {
     donateButton:"تبرع الآن بـ Pi",
     memo:"تبرع بـ {amount} Pi لـ {title} - شكراً على دعمك ❤️",
     campaigns:[
-        { title:"مساعدة غذائية للأسر الفقيرة", desc:"ساهم في توفير وجبات غذائية للعائلات المحتاجة في المناطق المتضررة.", icon:"🍲" },
-        { title:"تعليم الأطفال المحرومين", desc:"دعم تعليم الأطفال في المناطق النائية من خلال توفير الكتب والأدوات المدرسية.", icon:"📚" },
-        { title:"علاج طبي للمرضى", desc:"مساعدة في تغطية تكاليف العلاج للمرضى غير القادرين على تحمل النفقات.", icon:"🏥" },
-        { title:"مشاريع مياه نظيفة", desc:"حفر آبار وتوفير مياه شرب نظيفة للقرى المحرومة.", icon:"💧" }
+        { title:"مساعدة غذائية للأسر الفقيرة", desc:"ساهم في توفير وجبات غذائية للعائلات المحتاجة في المناطق المتضررة.", icon:"🍲", goal:500 },
+        { title:"تعليم الأطفال المحرومين", desc:"دعم تعليم الأطفال في المناطق النائية من خلال توفير الكتب والأدوات المدرسية.", icon:"📚", goal:800 },
+        { title:"علاج طبي للمرضى", desc:"مساعدة في تغطية تكاليف العلاج للمرضى غير القادرين على تحمل النفقات.", icon:"🏥", goal:600 },
+        { title:"مشاريع مياه نظيفة", desc:"حفر آبار وتوفير مياه شرب نظيفة للقرى المحرومة.", icon:"💧", goal:1000 }
     ]
 };
 
@@ -113,6 +115,27 @@ async function detectUser(){
     loadDashboard();
 }
 
+// تحديث لوحة المتبرع
+function loadDashboard(){
+    const donations=JSON.parse(localStorage.getItem(`donations_${currentUser}`)||'[]');
+    donationList.innerHTML='';
+    let total=0;
+    campaigns.forEach(camp=>{
+        const campTotal = donations.filter(d=>d.title===camp.title).reduce((sum,d)=>sum+d.amount,0);
+        const li=document.createElement('li');
+        li.innerHTML=`<strong>${camp.title}</strong> - ${campTotal} Pi - <div class="progress-container"><div class="progress-bar" id="bar-${camp.id}"></div></div>`;
+        donationList.appendChild(li);
+        // تحديث شريط التقدم
+        const bar=document.getElementById(`bar-${camp.id}`);
+        const percent=Math.min((campTotal/camp.goal)*100,100).toFixed(1);
+        bar.style.width=percent+'%';
+        bar.innerText=percent+'%';
+        total+=campTotal;
+    });
+    totalDonationsEl.innerText=`إجمالي التبرعات: ${total} Pi`;
+    dashboard.style.display=donations.length? 'block':'none';
+}
+
 function selectAmount(campaignId,amount,event){
     selectedAmounts[campaignId]=amount;
     document.querySelectorAll(`.amount-btn[data-campaign="${campaignId}"]`).forEach(btn=>btn.classList.remove('selected'));
@@ -129,21 +152,7 @@ function useCustomAmount(campaignId){
     document.querySelectorAll(`.amount-btn[data-campaign="${campaignId}"]`).forEach(btn=>btn.classList.remove('selected'));
 }
 
-// تحديث لوحة المتبرع
-function loadDashboard(){
-    const donations=JSON.parse(localStorage.getItem(`donations_${currentUser}`)||'[]');
-    donationList.innerHTML='';
-    let total=0;
-    donations.forEach(d=>{
-        total+=d.amount;
-        const li=document.createElement('li');
-        li.innerHTML=`<strong>${d.title}</strong> - ${d.amount} Pi`;
-        donationList.appendChild(li);
-    });
-    totalDonationsEl.innerText=`إجمالي التبرعات: ${total} Pi`;
-    dashboard.style.display=donations.length? 'block':'none';
-}
-
+// عملية التبرع
 async function donateWithPi(campaignId){
     const amount=selectedAmounts[campaignId];
     if(!amount || amount<=0){ alert("اختر أو أدخل مبلغ تبرع صحيح"); return; }
@@ -166,7 +175,6 @@ async function donateWithPi(campaignId){
             messageBox.style.display="block";
             setTimeout(()=>{messageBox.style.display='none';},5000);
 
-            // حفظ التبرع في LocalStorage
             const donations=JSON.parse(localStorage.getItem(`donations_${currentUser}`)||'[]');
             donations.push({title:campaign.title,amount});
             localStorage.setItem(`donations_${currentUser}`,JSON.stringify(donations));
@@ -217,6 +225,10 @@ window.onload=function(){
             <h2 class="campaign-title">${camp.title}</h2>
             <p class="campaign-desc">${camp.desc}</p>
             
+            <div class="progress-container">
+                <div class="progress-bar" id="bar-${camp.id}">0%</div>
+            </div>
+
             <div class="donate-options">
                 <button class="amount-btn selected" data-campaign="${camp.id}" onclick="selectAmount('${camp.id}',5,event)">5 Pi</button>
                 <button class="amount-btn" data-campaign="${camp.id}" onclick="selectAmount('${camp.id}',10,event)">10 Pi</button>
