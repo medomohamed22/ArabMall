@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,192 +8,250 @@
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
 <style>
-:root {
-    --primary:#7b3fe4;
-    --bg:#f4f6f8;
-    --card:#fff;
-    --text:#222;
+:root{
+  --primary:#7e57c2;
+  --secondary:#ede7f6;
+  --bg:#f7f5fb;
+  --card:#ffffff;
+  --text:#2c2c2c;
 }
-body.dark {
-    --bg:#121212;
-    --card:#1e1e1e;
-    --text:#eee;
+body.dark{
+  --bg:#121212;
+  --card:#1e1e1e;
+  --text:#f1f1f1;
 }
-body {
-    margin:0;
-    font-family:Segoe UI,Arial;
-    background:var(--bg);
-    color:var(--text);
-    transition:.3s;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Segoe UI,Arial;
+  background:var(--bg);
+  color:var(--text);
+  transition:.3s;
 }
-.container {
-    max-width:420px;
-    margin:auto;
-    padding:15px;
+header{
+  padding:20px;
+  text-align:center;
 }
-.card {
-    background:var(--card);
-    border-radius:16px;
-    padding:20px;
-    margin-top:15px;
-    box-shadow:0 8px 20px rgba(0,0,0,.08);
+header h1{
+  margin:0;
+  color:var(--primary);
 }
-.header {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+.toggle{
+  position:absolute;
+  top:20px;
+  right:20px;
+  cursor:pointer;
+  font-size:20px;
 }
-.toggle {cursor:pointer}
-h2,h3 {margin:0 0 10px}
-.user {text-align:center;font-weight:bold}
-input,button {
-    width:100%;
-    padding:14px;
-    border-radius:10px;
-    font-size:16px;
-    margin-top:10px;
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:15px;
 }
-input {
-    border:1px solid #ccc;
-    background:transparent;
-    color:var(--text);
+.user-box{
+  text-align:center;
+  margin-bottom:20px;
+  font-weight:bold;
 }
-button {
-    background:var(--primary);
-    color:#fff;
-    border:none;
-    cursor:pointer;
+.campaigns{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
 }
-.badge {
-    background:var(--primary);
-    color:#fff;
-    padding:6px 10px;
-    border-radius:20px;
-    font-size:12px;
+.card{
+  background:var(--card);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+  display:flex;
+  flex-direction:column;
 }
-.small {font-size:13px;opacity:.8}
+.icon{
+  font-size:48px;
+  text-align:center;
+}
+.card h3{
+  margin:10px 0 5px;
+  text-align:center;
+}
+.card p{
+  font-size:14px;
+  text-align:center;
+  opacity:.85;
+}
+.progress{
+  background:#ddd;
+  border-radius:20px;
+  height:10px;
+  overflow:hidden;
+  margin:10px 0;
+}
+.progress span{
+  display:block;
+  height:100%;
+  background:var(--primary);
+}
+input,button{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  font-size:16px;
+  margin-top:10px;
+}
+input{
+  border:1px solid #ccc;
+  background:transparent;
+  color:var(--text);
+}
+button{
+  background:linear-gradient(135deg,#9c27b0,#7e57c2);
+  border:none;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{opacity:.9}
+footer{
+  text-align:center;
+  margin:40px 0 10px;
+  font-size:13px;
+  opacity:.7;
+}
+
+/* Mobile */
+@media(max-width:600px){
+  header h1{font-size:24px}
+}
 </style>
 </head>
 
 <body>
+<header>
+  <h1>Donate Way 💜</h1>
+  <div class="toggle" onclick="toggleMode()">🌓</div>
+</header>
+
 <div class="container">
 
-<div class="header">
-    <h2>Donate Way 💜</h2>
-    <div class="toggle" onclick="toggleMode()">🌓</div>
+<div class="user-box">
+  👤 <span id="user">Guest</span>
 </div>
 
-<div class="card">
-    <div class="user" id="user">Guest</div>
-    <div class="small" style="text-align:center">
-        إجمالي تبرعاتك: <b id="total">0</b> Pi
-    </div>
-</div>
+<div class="campaigns" id="campaigns"></div>
 
-<div class="card">
-    <h3>تبرع الآن</h3>
-    <input type="number" id="amount" placeholder="مبلغ التبرع (Pi)" min="0.01" step="0.01">
-    <button onclick="donate()">تبرع حقيقي</button>
-</div>
-
-<div class="card">
-    <h3>🎖️ شارة المتبرع</h3>
-    <div id="badge">لا يوجد</div>
-</div>
-
-<div class="card">
-    <h3>🧾 تبرعاتك</h3>
-    <ul id="history"></ul>
-</div>
+<footer>
+Donate Way © 2025 – Powered by Pi Network
+</footer>
 
 </div>
 
 <script>
-// 🔴 Real Payments
 Pi.init({ version:"2.0", sandbox:false });
 
-let user = localStorage.getItem("pi_user") || "Guest";
-let donations = JSON.parse(localStorage.getItem("donations") || "[]");
+let currentUser = localStorage.getItem("pi_user") || "Guest";
 
-updateUI();
+const campaigns = [
+  {
+    title:"Food Aid",
+    desc:"Provide meals for families in need.",
+    icon:"🍲",
+    progress:65
+  },
+  {
+    title:"Education Support",
+    desc:"Support education for children.",
+    icon:"📚",
+    progress:40
+  },
+  {
+    title:"Medical Treatment",
+    desc:"Help patients afford treatment.",
+    icon:"🏥",
+    progress:80
+  },
+  {
+    title:"Clean Water",
+    desc:"Build wells and water projects.",
+    icon:"💧",
+    progress:55
+  }
+];
+
+document.getElementById("user").innerText = currentUser;
 
 function toggleMode(){
-    document.body.classList.toggle("dark");
+  document.body.classList.toggle("dark");
 }
 
-async function donate(){
-    const amount = Number(document.getElementById("amount").value);
-    if (!amount || amount <= 0) {
-        alert("أدخل مبلغ صحيح");
-        return;
+function renderCampaigns(){
+  const box = document.getElementById("campaigns");
+  box.innerHTML="";
+  campaigns.forEach((c,i)=>{
+    box.innerHTML += `
+      <div class="card">
+        <div class="icon">${c.icon}</div>
+        <h3>${c.title}</h3>
+        <p>${c.desc}</p>
+        <div class="progress">
+          <span style="width:${c.progress}%"></span>
+        </div>
+        <input type="number" min="0.01" step="0.01"
+          placeholder="Donation amount (Pi)" id="amount-${i}">
+        <button onclick="donate(${i})">Donate with Pi</button>
+      </div>
+    `;
+  });
+}
+
+async function donate(index){
+  const amountInput = document.getElementById(`amount-${index}`);
+  const amount = Number(amountInput.value);
+  if(!amount || amount<=0){
+    alert("Enter valid amount");
+    return;
+  }
+
+  try{
+    const auth = await Pi.authenticate(['username','payments']);
+    if(auth.username){
+      currentUser = auth.username;
+      localStorage.setItem("pi_user",currentUser);
+      document.getElementById("user").innerText=currentUser;
     }
+  }catch(e){
+    console.log("Guest mode");
+  }
 
-    // 🔑 Authenticate وقت الدفع فقط
-    try {
-        const auth = await Pi.authenticate(['username','payments']);
-        if (auth.username) {
-            user = auth.username;
-            localStorage.setItem("pi_user", user);
-            updateUI();
-        }
-    } catch(e){
-        console.log("Guest payment");
+  Pi.createPayment({
+    amount,
+    memo:`${campaigns[index].title} donation`,
+    metadata:{
+      campaign:campaigns[index].title,
+      donor:currentUser
     }
-
-    Pi.createPayment({
-        amount: amount,
-        memo: "Donate Way Donation",
-        metadata: {
-            donor: user,
-            source: "DonateWay"
-        }
-    },{
-        // ✅ حقيقي
-        onReadyForServerApproval: async (paymentId) => {
-            await fetch("/api/pi/approve", {
-                method:"POST",
-                headers:{ "Content-Type":"application/json" },
-                body:JSON.stringify({ paymentId })
-            });
-        },
-
-        // ✅ حقيقي
-        onReadyForServerCompletion: async (paymentId, txid) => {
-            await fetch("/api/pi/complete", {
-                method:"POST",
-                headers:{ "Content-Type":"application/json" },
-                body:JSON.stringify({ paymentId, txid })
-            });
-
-            donations.push({ amount, txid });
-            localStorage.setItem("donations", JSON.stringify(donations));
-            updateUI();
-            alert("تم التبرع بنجاح ✅");
-        },
-
-        onCancel: () => alert("تم إلغاء الدفع"),
-        onError: e => alert(e.message)
-    });
+  },{
+    onReadyForServerApproval: async (paymentId)=>{
+      await fetch("/api/pi/approve",{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({paymentId})
+      });
+    },
+    onReadyForServerCompletion: async (paymentId,txid)=>{
+      await fetch("/api/pi/complete",{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({paymentId,txid})
+      });
+      alert("Donation successful ✅");
+      amountInput.value="";
+    },
+    onCancel:()=>alert("Payment cancelled"),
+    onError:e=>alert(e.message)
+  });
 }
 
-function updateUI(){
-    document.getElementById("user").innerText = user;
-    const total = donations.reduce((s,d)=>s+d.amount,0);
-    document.getElementById("total").innerText = total;
-
-    const list = document.getElementById("history");
-    list.innerHTML = "";
-    donations.forEach(d=>{
-        list.innerHTML += `<li>${d.amount} Pi</li>`;
-    });
-
-    let badge = "لا يوجد";
-    if (total >= 50) badge = "💎 متبرع ماسي";
-    else if (total >= 20) badge = "🥇 متبرع ذهبي";
-    else if (total >= 5) badge = "🥈 متبرع فضي";
-    document.getElementById("badge").innerHTML =
-        `<span class="badge">${badge}</span>`;
-}
+renderCampaigns();
 </script>
 </body>
 </html>
