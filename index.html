@@ -34,7 +34,16 @@
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         h1 { font-size: 38px; color: #6a1b9a; margin: 10px 0; }
         p.intro { font-size: 19px; color: #7b1fa2; opacity: 0.9; max-width: 800px; margin: 0 auto 30px; }
-        #user { font-size: 23px; font-weight: bold; color: #4a148c; margin: 20px 0; }
+        
+        /* تنسيق اسم المستخدم */
+        #user { 
+            font-size: 23px; 
+            font-weight: bold; 
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 15px;
+            display: inline-block;
+        }
 
         .campaigns { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
 
@@ -115,19 +124,25 @@
     </div>
 
     <script>
-        // تهيئة Pi SDK
-        Pi.init({ version: "2.0" });
+        // ==========================================
+        // إعدادات Pi SDK
+        // ==========================================
+        
+        // هام: اجعل sandbox: false عند النشر الحقيقي
+        Pi.init({ version: "2.0", sandbox: true });
 
+        // المتغيرات العامة
         let currentLang = 'en';
         let currentUsername = null;
+        let selectedAmounts = {};
 
-        // النصوص
+        // قاعدة بيانات النصوص والترجمات
         const translations = {
             en: {
                 intro: "Donate with Pi Network to support charitable and humanitarian campaigns",
-                userLoading: "Authenticating via Pi...",
+                userLoading: "Connecting to Pi Wallet...",
                 userGuest: "Donate as Guest",
-                userGreeting: "Welcome, {name} 👋",
+                userGreeting: "Welcome, @{name} 👋",
                 note: "<strong>Note:</strong> You can choose a fixed amount or enter a custom amount (e.g. 0.001 or 1.5 or 999 Pi).<br>Payment is made through the official Pi wallet.",
                 footer: "Donate Way © 2025 - Powered by Pi Network",
                 customPlaceholder: "Custom amount",
@@ -142,9 +157,9 @@
             },
             ar: {
                 intro: "تبرع بعملة Pi Network لدعم الحملات الخيرية والإنسانية",
-                userLoading: "جاري التوثيق عبر Pi...",
+                userLoading: "جاري الاتصال بمحفظة Pi...",
                 userGuest: "تبرع كزائر",
-                userGreeting: "مرحباً، {name} 👋",
+                userGreeting: "مرحباً، @{name} 👋",
                 note: "<strong>ملاحظة:</strong> يمكنك اختيار مبلغ ثابت أو كتابة مبلغ مخصص (مثل 0.001 أو 1.5 أو 999 Pi).<br>الدفع يتم عبر محفظة Pi الرسمية.",
                 footer: "Donate Way © 2025 - مدعوم بتقنية Pi Network",
                 customPlaceholder: "مبلغ مخصص",
@@ -159,70 +174,87 @@
             }
         };
 
-        // كشف اللغة الافتراضية
+        // ضبط اللغة الافتراضية
         const userLang = (navigator.language || navigator.userLanguage || 'en').substr(0, 2);
         currentLang = userLang === 'ar' ? 'ar' : 'en';
         document.documentElement.lang = currentLang;
         document.documentElement.dir = currentLang === 'en' ? 'ltr' : 'rtl';
         document.getElementById('lang-switch').textContent = currentLang === 'en' ? 'Switch to Arabic' : 'تبديل إلى الإنجليزية';
 
-        const t = translations[currentLang];
 
-        let selectedAmounts = {};
+        // ==========================================
+        // دوال Pi Network
+        // ==========================================
 
-        // تحديث تحية المستخدم فوراً (جاري التوثيق)
-        document.getElementById('user').textContent = t.userLoading;
+        // دالة مطلوبة من SDK للتعامل مع المدفوعات غير المكتملة
+        function onIncompletePaymentFound(payment) {
+            console.log("Found incomplete payment: ", payment);
+            // يمكنك إضافة كود هنا لإرسال الدفعة المعلقة للسيرفر
+        }
+
+        // دالة المصادقة وجلب الاسم
+        async function authenticateUser() {
+            const greetingElement = document.getElementById('user');
+            // عرض رسالة تحميل
+            greetingElement.textContent = translations[currentLang].userLoading;
+            greetingElement.style.color = "#9c27b0";
+
+            try {
+                // طلب الصلاحيات
+                const user = await Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
+                
+                if(user.username) {
+                    currentUsername = user.username;
+                    updateUserGreeting();
+                    console.log("Authenticated user:", currentUsername);
+                }
+            } catch (err) {
+                console.warn("Authentication failed or cancelled:", err);
+                // العودة لوضع الزائر عند الفشل
+                currentUsername = null;
+                updateUserGreeting();
+            }
+        }
+
+
+        // ==========================================
+        // دوال واجهة المستخدم
+        // ==========================================
 
         function updateUserGreeting() {
             const greeting = document.getElementById('user');
+            const t = translations[currentLang];
+            
             if (currentUsername) {
                 greeting.textContent = t.userGreeting.replace('{name}', currentUsername);
+                greeting.style.color = "#2e7d32"; // أخضر عند النجاح
             } else {
                 greeting.textContent = t.userGuest;
+                greeting.style.color = "#4a148c"; // اللون العادي
             }
         }
 
         function updateDonateButton(card, amount) {
             const btn = card.querySelector('.donate');
             const safeAmount = amount || 10;
-            btn.textContent = t.donateButton.replace('{amount}', safeAmount);
+            btn.textContent = translations[currentLang].donateButton.replace('{amount}', safeAmount);
         }
-
-        // التعرف على المستخدم فور تحميل الصفحة
-        async function authenticateOnLoad() {
-            try {
-                // نحاول نأخد username بدون prompt إذا كان موجود (في Pi Browser بيشتغل تلقائي)
-                const user = await Pi.authenticate(['username']);
-                currentUsername = user.username || null;
-                updateUserGreeting();
-            } catch (err) {
-                // لو فشل أو رفض، نبقى على "تبرع كزائر"
-                console.log('تعرف تلقائي فشل (طبيعي لو مش في Pi Browser):', err);
-                updateUserGreeting();
-            }
-        }
-
-        // تبديل اللغة
-        document.getElementById('lang-switch').addEventListener('click', () => {
-            currentLang = currentLang === 'en' ? 'ar' : 'en';
-            document.documentElement.lang = currentLang;
-            document.documentElement.dir = currentLang === 'en' ? 'ltr' : 'rtl';
-            document.getElementById('lang-switch').textContent = currentLang === 'en' ? 'Switch to Arabic' : 'تبديل إلى الإنجليزية';
-
-            updateTexts();
-            updateAllDonateButtons();
-            updateUserGreeting();
-        });
 
         function updateTexts() {
-            document.querySelector('p.intro').textContent = translations[currentLang].intro;
-            document.querySelector('.note').innerHTML = translations[currentLang].note;
-            document.querySelector('footer').textContent = translations[currentLang].footer;
+            const t = translations[currentLang];
+            document.querySelector('p.intro').textContent = t.intro;
+            document.querySelector('.note').innerHTML = t.note;
+            document.querySelector('footer').textContent = t.footer;
 
-            document.querySelectorAll('.campaign-title').forEach((el, i) => el.textContent = translations[currentLang].campaigns[i].title);
-            document.querySelectorAll('.campaign-desc').forEach((el, i) => el.textContent = translations[currentLang].campaigns[i].desc);
-            document.querySelectorAll('.custom-input').forEach(input => input.placeholder = translations[currentLang].customPlaceholder);
-            document.querySelectorAll('.custom-btn').forEach(btn => btn.textContent = translations[currentLang].customButton);
+            // تحديث نصوص البطاقات
+            document.querySelectorAll('.campaign-card').forEach((card, index) => {
+                card.querySelector('.campaign-title').textContent = t.campaigns[index].title;
+                card.querySelector('.campaign-desc').textContent = t.campaigns[index].desc;
+                card.querySelector('.custom-input').placeholder = t.customPlaceholder;
+                card.querySelector('.custom-btn').textContent = t.customButton;
+            });
+
+            updateUserGreeting();
         }
 
         function updateAllDonateButtons() {
@@ -233,21 +265,26 @@
             });
         }
 
-        window.onload = function() {
-            updateTexts();
+        // ==========================================
+        // تشغيل الموقع (Main Logic)
+        // ==========================================
 
+        window.onload = function() {
+            // 1. بناء البطاقات لأول مرة
             const container = document.getElementById('campaigns');
-            translations[currentLang].campaigns.forEach((camp, index) => {
+            // نستخدم الإنجليزية كمرجع للبناء الهيكلي
+            translations['en'].campaigns.forEach((campData, index) => {
                 const id = `camp-${index}`;
                 selectedAmounts[id] = 10;
 
                 const card = document.createElement('div');
                 card.className = 'campaign-card';
                 card.dataset.id = id;
+                
                 card.innerHTML = `
-                    <div class="icon">${camp.icon}</div>
-                    <h2 class="campaign-title">${camp.title}</h2>
-                    <p class="campaign-desc">${camp.desc}</p>
+                    <div class="icon">${campData.icon}</div>
+                    <h2 class="campaign-title"></h2>
+                    <p class="campaign-desc"></p>
                     
                     <div class="donate-options">
                         <button class="amount-btn selected" data-amount="5">5 Pi</button>
@@ -257,15 +294,15 @@
                     </div>
                     
                     <div class="custom-amount">
-                        <input type="number" step="0.001" min="0.001" class="custom-input" placeholder="${translations[currentLang].customPlaceholder}">
-                        <button class="amount-btn custom-btn">${translations[currentLang].customButton}</button>
+                        <input type="number" step="0.001" min="0.001" class="custom-input">
+                        <button class="amount-btn custom-btn"></button>
                     </div>
                     
-                    <button class="donate">${t.donateButton.replace('{amount}', '10')}</button>
+                    <button class="donate"></button>
                 `;
                 container.appendChild(card);
 
-                // Events
+                // أحداث أزرار القيم الثابتة
                 card.querySelectorAll('.amount-btn[data-amount]').forEach(btn => {
                     btn.addEventListener('click', () => {
                         card.querySelectorAll('.amount-btn[data-amount]').forEach(b => b.classList.remove('selected'));
@@ -276,6 +313,7 @@
                     });
                 });
 
+                // أحداث المبلغ المخصص
                 const customBtn = card.querySelector('.custom-btn');
                 const customInput = card.querySelector('.custom-input');
                 customBtn.addEventListener('click', () => {
@@ -287,53 +325,71 @@
                     }
                 });
 
+                // حدث زر التبرع الرئيسي
                 card.querySelector('.donate').addEventListener('click', async () => {
                     const amount = selectedAmounts[id];
-                    if (!amount || amount <= 0) {
-                        alert(currentLang === 'en' ? 'Choose a valid amount' : 'اختر مبلغ صحيح');
-                        return;
+                    if (!amount || amount <= 0) return;
+
+                    // محاولة التوثيق إذا لم يتم بعد
+                    if (!currentUsername) {
+                        await authenticateUser();
+                        if (!currentUsername) {
+                            alert(currentLang === 'en' ? "Please open in Pi Browser." : "يرجى الفتح في متصفح Pi.");
+                            return;
+                        }
                     }
 
-                    try {
-                        const scopes = currentUsername ? ['payments'] : ['username', 'payments'];
-                        const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                        if (user.username && user.username !== currentUsername) {
-                            currentUsername = user.username;
-                            updateUserGreeting();
+                    // بيانات الدفع
+                    const paymentData = {
+                        amount: amount,
+                        memo: `Donation: ${amount} Pi - ${currentUsername}`,
+                        metadata: { campaignId: id, donor: currentUsername }
+                    };
+
+                    const callbacks = {
+                        onReadyForServerApproval: (paymentId) => {
+                            // هنا يجب الاتصال بالسيرفر الخاص بك للموافقة
+                            console.log("Waiting for approval: " + paymentId);
+                            alert("Payment initialized! (Backend required for completion)");
+                        },
+                        onReadyForServerCompletion: (paymentId, txid) => {
+                            console.log("Completed TXID: " + txid);
+                            alert("Donation Successful! TXID: " + txid);
+                        },
+                        onCancel: () => console.log("Cancelled"),
+                        onError: (err) => {
+                            console.error(err);
+                            alert("Error: " + err.message);
                         }
+                    };
 
-                        const paymentData = {
-                            amount,
-                            memo: `${camp.title} - ${amount} Pi donation from ${user.username || 'Guest'} ❤️`,
-                            metadata: { campaign: camp.title, donor: user.uid }
-                        };
-
-                        const callbacks = {
-                            onReadyForServerApproval: async (paymentId) => {
-                                await fetch('/api/pi/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId }) });
-                            },
-                            onReadyForServerCompletion: async (paymentId, txid) => {
-                                await fetch('/api/pi/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId, txid }) });
-                                alert(currentLang === 'en' ? `Success! TXID: ${txid}` : `نجح الدفع! TXID: ${txid}`);
-                            },
-                            onCancel: () => alert(currentLang === 'en' ? 'Cancelled' : 'تم الإلغاء'),
-                            onError: (err) => alert('Error: ' + err.message)
-                        };
-
+                    try {
                         Pi.createPayment(paymentData, callbacks);
-                    } catch (err) {
-                        alert('Error: ' + err.message);
+                    } catch(e) {
+                        alert(e);
                     }
                 });
             });
 
-            // التعرف على الاسم فور تحميل الصفحة
-            authenticateOnLoad();
+            // 2. تحديث النصوص باللغة الحالية
+            updateTexts();
+            updateAllDonateButtons();
+
+            // 3. محاولة التعرف على المستخدم فوراً
+            authenticateUser();
         };
 
-        function onIncompletePaymentFound(payment) {
-            console.log("Incomplete payment:", payment);
-        }
+        // زر تبديل اللغة
+        document.getElementById('lang-switch').addEventListener('click', () => {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'en' ? 'ltr' : 'rtl';
+            document.getElementById('lang-switch').textContent = currentLang === 'en' ? 'Switch to Arabic' : 'تبديل إلى الإنجليزية';
+            
+            updateTexts();
+            updateAllDonateButtons();
+        });
+
     </script>
 </body>
 </html>
