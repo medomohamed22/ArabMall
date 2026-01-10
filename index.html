@@ -174,19 +174,9 @@ Donate Way © 2025 – Powered by Pi Network
 <script>
 Pi.init({ version:"2.0", sandbox:false });
 
-let currentUser = localStorage.getItem("pi_user") || "Guest";
+let currentUser = "Guest";
 
-const campaigns = [
-  { title:"Food Aid", desc:"Provide meals for families in need.", icon:"🍲", progress:65 },
-  { title:"Education Support", desc:"Support education for children.", icon:"📚", progress:40 },
-  { title:"Medical Treatment", desc:"Help patients afford treatment.", icon:"🏥", progress:80 },
-  { title:"Clean Water", desc:"Build wells and water projects.", icon:"💧", progress:55 }
-];
-
-document.getElementById("user").innerText = currentUser;
-
-function toggleMode(){document.body.classList.toggle("dark");}
-
+// Toast function
 function showToast(msg,type="info"){
   const t=document.getElementById("toast");
   t.innerText=msg;
@@ -195,6 +185,34 @@ function showToast(msg,type="info"){
   setTimeout(()=>{t.style.display="none"},3000);
 }
 
+// Attempt to detect Pi username automatically
+async function detectUser(){
+  try{
+    const user = await Pi.authenticate(['username']); 
+    if(user.username){
+      currentUser=user.username;
+      localStorage.setItem("pi_user",currentUser);
+      document.getElementById("user").innerText=currentUser;
+      showToast(`Welcome, ${currentUser} 👋`,"success");
+    }
+  }catch(e){
+    console.log("Guest mode");
+    currentUser = localStorage.getItem("pi_user") || "Guest";
+    document.getElementById("user").innerText=currentUser;
+  }
+}
+
+// Campaigns array
+const campaigns = [
+  { title:"Food Aid", desc:"Provide meals for families in need.", icon:"🍲", progress:65 },
+  { title:"Education Support", desc:"Support education for children.", icon:"📚", progress:40 },
+  { title:"Medical Treatment", desc:"Help patients afford treatment.", icon:"🏥", progress:80 },
+  { title:"Clean Water", desc:"Build wells and water projects.", icon:"💧", progress:55 }
+];
+
+function toggleMode(){document.body.classList.toggle("dark");}
+
+// Render campaigns
 function renderCampaigns(){
   const box = document.getElementById("campaigns");
   box.innerHTML="";
@@ -212,6 +230,7 @@ function renderCampaigns(){
   });
 }
 
+// Donate function
 async function donate(index){
   const amountInput=document.getElementById(`amount-${index}`);
   const amount=Number(amountInput.value);
@@ -246,6 +265,8 @@ async function donate(index){
   });
 }
 
+// Initialize
+detectUser();
 renderCampaigns();
 </script>
 </body>
