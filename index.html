@@ -290,26 +290,44 @@ async function pay(i){
         currentUser=user.username||currentUser;
         updateUser();
 
-        Pi.createPayment({
-            amount:Number(selected[i]),
-            memo:`${text[currentLang].campaigns[i].t}`,
-        },{
-            onReadyForServerApproval:pid=>{
-                fetch("/api/pi/approve",{method:"POST",body:JSON.stringify({paymentId:pid})});
-            },
-            onReadyForServerCompletion:(pid,txid)=>{
-                fetch("/api/pi/complete",{method:"POST",body:JSON.stringify({paymentId:pid,txid})});
-                saveDonation({
-                    donor:currentUser||"Guest",
-                    campaign:text[currentLang].campaigns[i].t,
-                    amount:selected[i],
-                    txid
-                });
-                alert("Payment Success");
-            },
-            onCancel:()=>alert("Cancelled"),
-            onError:e=>alert(e.message)
+   Pi.createPayment({
+    amount: Number(selected[i]),
+    memo: `${text[currentLang].campaigns[i].t}`,
+    metadata: {
+        campaign: text[currentLang].campaigns[i].t,
+        donor: currentUser || "Guest",
+        source: "DonateWay"
+    }
+},{
+    onReadyForServerApproval: async (paymentId) => {
+        await fetch("/api/pi/approve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId })
         });
+    },
+
+    onReadyForServerCompletion: async (paymentId, txid) => {
+        await fetch("/api/pi/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId, txid })
+        });
+
+        saveDonation({
+            donor: currentUser || "Guest",
+            campaign: text[currentLang].campaigns[i].t,
+            amount: selected[i],
+            txid
+        });
+
+        alert("Payment Success ✅");
+    },
+
+    onCancel: () => alert("Payment Cancelled"),
+    onError: (err) => alert(err.message)
+});
+
     }catch(e){alert(e.message);}
 }
 
