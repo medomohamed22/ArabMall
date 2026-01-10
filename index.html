@@ -3,155 +3,196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DonateWay</title>
+<title>Donate Way</title>
 
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
 <style>
+:root {
+    --primary:#7b3fe4;
+    --bg:#f4f6f8;
+    --card:#fff;
+    --text:#222;
+}
+body.dark {
+    --bg:#121212;
+    --card:#1e1e1e;
+    --text:#eee;
+}
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
-    margin: 0;
+    margin:0;
+    font-family:Segoe UI,Arial;
+    background:var(--bg);
+    color:var(--text);
+    transition:.3s;
 }
 .container {
-    max-width: 420px;
-    margin: auto;
-    padding: 15px;
+    max-width:420px;
+    margin:auto;
+    padding:15px;
 }
 .card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    background:var(--card);
+    border-radius:16px;
+    padding:20px;
+    margin-top:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
-h2 {
-    text-align: center;
-    margin-bottom: 10px;
+.header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
-.user {
-    text-align: center;
-    margin-bottom: 15px;
-    font-weight: bold;
+.toggle {cursor:pointer}
+h2,h3 {margin:0 0 10px}
+.user {text-align:center;font-weight:bold}
+input,button {
+    width:100%;
+    padding:14px;
+    border-radius:10px;
+    font-size:16px;
+    margin-top:10px;
 }
 input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    font-size: 16px;
+    border:1px solid #ccc;
+    background:transparent;
+    color:var(--text);
 }
 button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: #7b3fe4;
-    color: #fff;
-    font-size: 18px;
-    cursor: pointer;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    cursor:pointer;
 }
-button:active {
-    transform: scale(.98);
+.badge {
+    background:var(--primary);
+    color:#fff;
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:12px;
 }
-.note {
-    text-align: center;
-    font-size: 13px;
-    color: #777;
-    margin-top: 10px;
-}
+.small {font-size:13px;opacity:.8}
 </style>
 </head>
 
 <body>
 <div class="container">
-    <div class="card">
-        <h2>DonateWay 💜</h2>
-        <div class="user" id="user">Guest</div>
 
-        <input type="number" id="amount" placeholder="أدخل مبلغ التبرع (Pi)" min="0.1" step="0.01">
+<div class="header">
+    <h2>Donate Way 💜</h2>
+    <div class="toggle" onclick="toggleMode()">🌓</div>
+</div>
 
-        <button onclick="donate()">تبرع الآن</button>
-
-        <div class="note">
-            يمكنك التبرع كزائر أو كمستخدم Pi
-        </div>
+<div class="card">
+    <div class="user" id="user">Guest</div>
+    <div class="small" style="text-align:center">
+        إجمالي تبرعاتك: <b id="total">0</b> Pi
     </div>
 </div>
 
+<div class="card">
+    <h3>تبرع الآن</h3>
+    <input type="number" id="amount" placeholder="مبلغ التبرع (Pi)" min="0.01" step="0.01">
+    <button onclick="donate()">تبرع حقيقي</button>
+</div>
+
+<div class="card">
+    <h3>🎖️ شارة المتبرع</h3>
+    <div id="badge">لا يوجد</div>
+</div>
+
+<div class="card">
+    <h3>🧾 تبرعاتك</h3>
+    <ul id="history"></ul>
+</div>
+
+</div>
+
 <script>
-Pi.init({ version: "2.0", sandbox: false });
+// 🔴 Real Payments
+Pi.init({ version:"2.0", sandbox:false });
 
-let currentUser = "Guest";
+let user = localStorage.getItem("pi_user") || "Guest";
+let donations = JSON.parse(localStorage.getItem("donations") || "[]");
 
-// تحميل الاسم لو متخزن
-const savedUser = localStorage.getItem("pi_username");
-if (savedUser) {
-    currentUser = savedUser;
-    updateUser();
+updateUI();
+
+function toggleMode(){
+    document.body.classList.toggle("dark");
 }
 
-function updateUser() {
-    document.getElementById("user").innerText = currentUser;
-}
-
-async function donate() {
+async function donate(){
     const amount = Number(document.getElementById("amount").value);
-
     if (!amount || amount <= 0) {
-        alert("من فضلك أدخل مبلغ صحيح");
+        alert("أدخل مبلغ صحيح");
         return;
     }
 
-    let username = currentUser;
-
-    // 🔑 هنا الحل الحقيقي
+    // 🔑 Authenticate وقت الدفع فقط
     try {
-        if (typeof Pi !== "undefined" && Pi.authenticate) {
-            const auth = await Pi.authenticate(['username', 'payments']);
-
-            if (auth && auth.username) {
-                username = auth.username;
-                currentUser = auth.username;
-                localStorage.setItem("pi_username", auth.username);
-                updateUser();
-            }
+        const auth = await Pi.authenticate(['username','payments']);
+        if (auth.username) {
+            user = auth.username;
+            localStorage.setItem("pi_user", user);
+            updateUI();
         }
-    } catch (e) {
-        console.log("Auth skipped:", e.message);
+    } catch(e){
+        console.log("Guest payment");
     }
 
-    // 💰 إنشاء الدفع
     Pi.createPayment({
         amount: amount,
-        memo: "DonateWay Donation",
+        memo: "Donate Way Donation",
         metadata: {
-            donor: username,
-            source: "DonateWay",
-            type: "donation"
+            donor: user,
+            source: "DonateWay"
         }
     },{
+        // ✅ حقيقي
         onReadyForServerApproval: async (paymentId) => {
             await fetch("/api/pi/approve", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ paymentId })
+                method:"POST",
+                headers:{ "Content-Type":"application/json" },
+                body:JSON.stringify({ paymentId })
             });
         },
 
+        // ✅ حقيقي
         onReadyForServerCompletion: async (paymentId, txid) => {
             await fetch("/api/pi/complete", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ paymentId, txid })
+                method:"POST",
+                headers:{ "Content-Type":"application/json" },
+                body:JSON.stringify({ paymentId, txid })
             });
 
+            donations.push({ amount, txid });
+            localStorage.setItem("donations", JSON.stringify(donations));
+            updateUI();
             alert("تم التبرع بنجاح ✅");
         },
 
         onCancel: () => alert("تم إلغاء الدفع"),
-        onError: (err) => alert(err.message)
+        onError: e => alert(e.message)
     });
+}
+
+function updateUI(){
+    document.getElementById("user").innerText = user;
+    const total = donations.reduce((s,d)=>s+d.amount,0);
+    document.getElementById("total").innerText = total;
+
+    const list = document.getElementById("history");
+    list.innerHTML = "";
+    donations.forEach(d=>{
+        list.innerHTML += `<li>${d.amount} Pi</li>`;
+    });
+
+    let badge = "لا يوجد";
+    if (total >= 50) badge = "💎 متبرع ماسي";
+    else if (total >= 20) badge = "🥇 متبرع ذهبي";
+    else if (total >= 5) badge = "🥈 متبرع فضي";
+    document.getElementById("badge").innerHTML =
+        `<span class="badge">${badge}</span>`;
 }
 </script>
 </body>
