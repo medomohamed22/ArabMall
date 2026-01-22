@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -118,7 +118,45 @@
         .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @media (max-width: 480px) { header { height: 65px; padding: 0 15px; } .logo { font-size: 1.4rem; } body { padding-top: 90px; } .side-drawer { width: 85%; } .user-pill { font-size: 0.75rem; margin-right: 5px; } }
+        /* Language toggle ball */
+        .lang-ball{
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 14px 35px rgba(0,0,0,0.12);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            z-index: 10003;
+            transition: transform .2s ease;
+            user-select: none;
+        }
+        .lang-ball:active{ transform: scale(0.95); }
+        .lang-ball span{
+            font-weight: 800;
+            color: var(--primary-purple);
+            letter-spacing: 0.5px;
+        }
+
+        /* Move ball a bit on RTL so it doesn't conflict visually */
+        html[dir="rtl"] .lang-ball{ right: 22px; }
+
+        @media (max-width: 480px) {
+            header { height: 65px; padding: 0 15px; }
+            .logo { font-size: 1.4rem; }
+            body { padding-top: 90px; }
+            .side-drawer { width: 85%; }
+            .user-pill { font-size: 0.75rem; margin-right: 5px; }
+            .lang-ball { width: 52px; height: 52px; bottom: 18px; right: 18px; }
+        }
     </style>
 </head>
 <body>
@@ -127,21 +165,35 @@
     <div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
 
     <div id="side-drawer" class="side-drawer">
-        <h2 class="drawer-title"><span class="live-indicator"></span>📊 إحصائيات المنصة</h2>
+        <h2 class="drawer-title">
+            <span class="live-indicator"></span>
+            <span data-i18n="drawer_stats_title">📊 Platform Stats</span>
+        </h2>
+
         <div id="stats-container">
             <div class="stats-card">
-                <div class="stat-item"><span class="stat-label">إجمالي التبرعات</span><span id="total-pi-stats" class="stat-value">0.00 π</span></div>
-                <hr style="opacity:0.3; margin:10px 0;"><div class="stat-item"><span class="stat-label">عدد الحملات</span><span id="total-campaigns-stats" class="stat-value">0</span></div>
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="stats_total_donations">Total Donations</span>
+                    <span id="total-pi-stats" class="stat-value">0.00 π</span>
+                </div>
+                <hr style="opacity:0.3; margin:10px 0;">
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="stats_total_campaigns">Campaigns</span>
+                    <span id="total-campaigns-stats" class="stat-value">0</span>
+                </div>
             </div>
         </div>
-        <h3 class="drawer-title" style="font-size: 1.1rem; margin-top: 20px;">👤 سجل جميع المتبرعين</h3>
+
+        <h3 class="drawer-title" style="font-size: 1.1rem; margin-top: 20px;">
+            <span data-i18n="drawer_donors_title">👤 All Donors Log</span>
+        </h3>
         <div id="all-donors-list" style="display:flex; flex-direction:column; gap:10px;"></div>
     </div>
 
     <div id="image-modal" class="modal" onclick="closeImage()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="close-modal" onclick="closeImage()">&times;</div>
-            <h3 id="modal-title" style="margin-bottom: 15px; color: var(--primary-purple);">أثر تبرعكم</h3>
+            <h3 id="modal-title" style="margin-bottom: 15px; color: var(--primary-purple);" data-i18n="modal_title_default">Your Donation Impact</h3>
             <img id="modal-img-src" src="" class="modal-img">
         </div>
     </div>
@@ -152,28 +204,132 @@
             <div class="logo" onclick="location.reload()">Donate Way</div>
         </div>
         <div class="auth-section">
-            <button id="login-button" style="background:var(--primary-purple); color:white; border:none; padding:10px 25px; border-radius:50px; font-weight:700; cursor:pointer;" onclick="login()">دخول</button>
+            <button id="login-button" style="background:var(--primary-purple); color:white; border:none; padding:10px 25px; border-radius:50px; font-weight:700; cursor:pointer;" onclick="login()">
+                <span data-i18n="btn_login">Login</span>
+            </button>
             <div id="user-pill" class="user-pill"><span id="username-display"></span></div>
         </div>
     </header>
 
     <div class="container">
-        <h1 class="hero-title">عطاؤك اليوم.. حياة جديدة لغيرك غداً</h1>
+        <h1 class="hero-title" data-i18n="hero_title">Your gift today... a new life tomorrow</h1>
         <div id="main-loader" class="loader"></div>
         <div class="campaigns-grid" id="campaigns-container"></div>
+
         <div class="heroes-section">
-            <h2 style="color:var(--primary-purple);">🏆 قائمة أبطال الخير</h2>
+            <h2 style="color:var(--primary-purple);" data-i18n="heroes_title">🏆 Top Donors</h2>
             <div id="heroes-container" class="heroes-list"></div>
         </div>
     </div>
+
+    <!-- Language toggle ball -->
+    <button class="lang-ball" id="lang-ball" onclick="toggleLanguage()" aria-label="Toggle Language">
+        <span id="lang-ball-label">AR</span>
+    </button>
 
     <script>
         const SUPABASE_URL = 'https://axjkwrssmofzavaoqutq.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_tiuMncgWhf1YRWoD-uYQ3Q_ziI8OKci';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const Pi = window.Pi;
+
         let currentUser = null;
         let campaigns = [];
+        let currentLang = 'en'; // MAIN language is English
+
+        const I18N = {
+            en: {
+                drawer_stats_title: "📊 Platform Stats",
+                stats_total_donations: "Total Donations",
+                stats_total_campaigns: "Campaigns",
+                drawer_donors_title: "👤 All Donors Log",
+
+                modal_title_default: "Your Donation Impact",
+                modal_impact_prefix: "Donation impact: ",
+                msg_impact_soon: "Impact images will be available soon.",
+                btn_login: "Login",
+
+                hero_title: "Your gift today... a new life tomorrow",
+                heroes_title: "🏆 Top Donors",
+                rank_label: "Rank",
+
+                label_goal: "Goal:",
+                btn_donate_now: "Donate now",
+                btn_connecting: "Connecting...",
+                btn_done: "Donated ✅",
+                btn_view_impact: "🖼️ View impact",
+                placeholder_amount: "0.00",
+
+                msg_login_first: "Please login first.",
+                msg_valid_amount: "Enter a valid amount.",
+                msg_use_pi_browser: "Please use Pi Browser.",
+                msg_thanks: "Thank you!",
+                msg_pay_error: "Payment error occurred.",
+
+                memo_prefix: "Donation for: "
+            },
+            ar: {
+                drawer_stats_title: "📊 إحصائيات المنصة",
+                stats_total_donations: "إجمالي التبرعات",
+                stats_total_campaigns: "عدد الحملات",
+                drawer_donors_title: "👤 سجل جميع المتبرعين",
+
+                modal_title_default: "أثر تبرعكم",
+                modal_impact_prefix: "أثر تبرعكم: ",
+                msg_impact_soon: "سيتم رفع صور الأثر قريباً",
+                btn_login: "دخول",
+
+                hero_title: "عطاؤك اليوم.. حياة جديدة لغيرك غداً",
+                heroes_title: "🏆 قائمة أبطال الخير",
+                rank_label: "مركز",
+
+                label_goal: "الهدف:",
+                btn_donate_now: "تبرع الآن",
+                btn_connecting: "جاري الاتصال...",
+                btn_done: "تم التبرع ✅",
+                btn_view_impact: "🖼️ مشاهدة أثر التبرع",
+                placeholder_amount: "0.00",
+
+                msg_login_first: "سجل دخولك أولاً",
+                msg_valid_amount: "أدخل مبلغاً صحيحاً",
+                msg_use_pi_browser: "استخدم متصفح Pi",
+                msg_thanks: "شكراً لك!",
+                msg_pay_error: "حدث خطأ في الدفع",
+
+                memo_prefix: "تبرع لـ: "
+            }
+        };
+
+        function t(key){
+            return (I18N[currentLang] && I18N[currentLang][key]) ? I18N[currentLang][key] : key;
+        }
+
+        function applyLanguage(){
+            const html = document.documentElement;
+            html.lang = currentLang;
+            html.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
+
+            // Update static texts
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+
+            // Update language ball label (shows the OTHER language)
+            document.getElementById('lang-ball-label').textContent = (currentLang === 'en') ? 'AR' : 'EN';
+
+            // Rerender dynamic sections
+            renderCamps();
+            // Heroes content uses mostly symbols + @username, but rank label is inside renderHeroes
+            // So we call loadData (or just rerender heroes from last computed list).
+            // Easiest: refresh heroes from DB quickly:
+            loadData();
+        }
+
+        function toggleLanguage(){
+            currentLang = (currentLang === 'en') ? 'ar' : 'en';
+            applyLanguage();
+        }
 
         // حل مشكلة الدفع المعلق فور التشغيل
         const onIncompletePaymentFound = async (payment) => {
@@ -213,14 +369,15 @@
 
         function showMsg(text) {
             const alertBox = document.getElementById('custom-alert');
-            alertBox.innerText = text; alertBox.style.display = 'block';
+            alertBox.innerText = text; 
+            alertBox.style.display = 'block';
             setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
         }
 
         function openImage(url, title) {
-            if (!url || url === '' || url === 'null') { showMsg("سيتم رفع صور الأثر قريباً"); return; }
+            if (!url || url === '' || url === 'null') { showMsg(t('msg_impact_soon')); return; }
             document.getElementById('modal-img-src').src = url;
-            document.getElementById('modal-title').innerText = "أثر تبرعكم: " + title;
+            document.getElementById('modal-title').innerText = t('modal_impact_prefix') + title;
             document.getElementById('image-modal').style.display = 'flex';
         }
 
@@ -229,10 +386,17 @@
         async function loadData() {
             const { data: camps } = await _supabase.from('campaigns').select('*').order('id');
             if (camps) { campaigns = camps; renderCamps(); }
+
             const { data: dons } = await _supabase.from('donations').select('username, amount');
             if (dons) {
-                const totals = dons.reduce((acc, curr) => { acc[curr.username] = (acc[curr.username] || 0) + parseFloat(curr.amount); return acc; }, {});
-                const sorted = Object.entries(totals).map(([username, total]) => ({ username, total })).sort((a,b) => b.total - a.total).slice(0,5);
+                const totals = dons.reduce((acc, curr) => {
+                    acc[curr.username] = (acc[curr.username] || 0) + parseFloat(curr.amount);
+                    return acc;
+                }, {});
+                const sorted = Object.entries(totals)
+                    .map(([username, total]) => ({ username, total }))
+                    .sort((a,b) => b.total - a.total)
+                    .slice(0,5);
                 renderHeroes(sorted);
             }
         }
@@ -245,15 +409,21 @@
                     <div class="card">
                         <img src="${c.image_url || 'https://via.placeholder.com/400x200'}" class="campaign-img">
                         <h3>${c.title}</h3>
+
                         <div style="display:flex; justify-content:space-between; margin-top:10px; font-weight:bold;">
                             <span style="color:var(--primary-purple)">${c.current_amount || 0} π</span>
-                            <span style="color:#bbb">الهدف: ${c.target_amount} π</span>
+                            <span style="color:#bbb">${t('label_goal')} ${c.target_amount} π</span>
                         </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
-                        <input type="number" id="in-${c.id}" class="amount-input" placeholder="0.00">
+
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:${progress}%"></div>
+                        </div>
+
+                        <input type="number" id="in-${c.id}" class="amount-input" placeholder="${t('placeholder_amount')}">
+
                         <div class="btn-group">
-                            <button id="btn-${c.id}" class="donate-btn" onclick="handleDonate(${c.id})">تبرع الآن</button>
-                            <button class="result-btn" onclick="openImage('${c.result_image_url}', '${c.title}')">🖼️ مشاهدة أثر التبرع</button>
+                            <button id="btn-${c.id}" class="donate-btn" onclick="handleDonate(${c.id})">${t('btn_donate_now')}</button>
+                            <button class="result-btn" onclick="openImage('${c.result_image_url}', '${c.title}')">${t('btn_view_impact')}</button>
                         </div>
                     </div>`;
             }).join('');
@@ -262,7 +432,7 @@
         function renderHeroes(heroes) {
             document.getElementById('heroes-container').innerHTML = heroes.map((h, i) => `
                 <div class="hero-card rank-${i+1}">
-                    <div class="rank-tag">مركز ${i+1}</div>
+                    <div class="rank-tag">${t('rank_label')} ${i+1}</div>
                     <div class="hero-avatar">${h.username.charAt(0).toUpperCase()}</div>
                     <div class="hero-name">@${h.username}</div>
                     <div class="hero-amount">${h.total.toFixed(2)} π</div>
@@ -273,43 +443,74 @@
             try {
                 const auth = await Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
                 currentUser = auth.user;
+
                 document.getElementById('login-button').style.display = 'none';
                 document.getElementById('user-pill').style.display = 'flex';
                 document.getElementById('username-display').textContent = currentUser.username;
-            } catch (e) { showMsg("استخدم متصفح Pi"); }
+            } catch (e) {
+                showMsg(t('msg_use_pi_browser'));
+            }
         }
 
         async function recordDonation(amount, campaignId) {
-            await _supabase.from('donations').insert([{ pi_user_id: currentUser.uid, username: currentUser.username, amount, campaign_id: campaignId }]);
+            await _supabase.from('donations').insert([{
+                pi_user_id: currentUser.uid,
+                username: currentUser.username,
+                amount,
+                campaign_id: campaignId
+            }]);
+
             const camp = campaigns.find(c => c.id == campaignId);
-            await _supabase.from('campaigns').update({ current_amount: (parseFloat(camp.current_amount) || 0) + amount }).eq('id', campaignId);
+            await _supabase.from('campaigns')
+                .update({ current_amount: (parseFloat(camp.current_amount) || 0) + amount })
+                .eq('id', campaignId);
+
             loadData();
         }
 
         function handleDonate(id) {
-            if (!currentUser) return showMsg("سجل دخولك أولاً");
+            if (!currentUser) return showMsg(t('msg_login_first'));
+
             const btn = document.getElementById(`btn-${id}`);
             const input = document.getElementById(`in-${id}`);
             const amt = parseFloat(input.value);
-            
-            if (!amt || amt <= 0) return showMsg("أدخل مبلغاً صحيحاً");
+
+            if (!amt || amt <= 0) return showMsg(t('msg_valid_amount'));
 
             // حماية النقر المزدوج: تعطيل الزر فوراً
             btn.disabled = true;
-            btn.innerText = "جاري الاتصال...";
+            btn.innerText = t('btn_connecting');
             document.getElementById('main-loader').style.display = 'block';
 
+            const campTitle = (campaigns.find(c => c.id == id) || {}).title || '';
+
             Pi.createPayment({
-                amount: amt, memo: `تبرع لـ: ${campaigns.find(c => c.id == id).title}`, metadata: { campaignId: id }
+                amount: amt,
+                memo: `${t('memo_prefix')}${campTitle}`,
+                metadata: { campaignId: id }
             }, {
-                onReadyForServerApproval: (payId) => fetch('/api/pi/approve', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({paymentId:payId})}),
-                onReadyForServerCompletion: (payId, tx) => fetch('/api/pi/complete', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({paymentId:payId, txid:tx})}).then(() => { 
-                    recordDonation(amt, id); 
-                    resetButton(btn, "تم التبرع ✅");
-                    showMsg("شكراً لك!"); 
+                onReadyForServerApproval: (payId) => fetch('/api/pi/approve', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ paymentId: payId })
                 }),
-                onCancel: () => resetButton(btn, "تبرع الآن"),
-                onError: (e) => { resetButton(btn, "تبرع الآن"); showMsg("حدث خطأ في الدفع"); }
+
+                onReadyForServerCompletion: (payId, tx) => fetch('/api/pi/complete', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ paymentId: payId, txid: tx })
+                }).then(() => { 
+                    recordDonation(amt, id); 
+                    resetButton(btn, t('btn_done'));
+                    showMsg(t('msg_thanks'));
+                }),
+
+                onCancel: () => resetButton(btn, t('btn_donate_now')),
+
+                onError: (e) => { 
+                    resetButton(btn, t('btn_donate_now')); 
+                    showMsg(t('msg_pay_error')); 
+                }
             });
         }
 
@@ -319,7 +520,11 @@
             document.getElementById('main-loader').style.display = 'none';
         }
 
-        window.onload = () => { Pi.init({version:"2.0"}); loadData(); };
+        window.onload = () => {
+            Pi.init({version:"2.0"});
+            applyLanguage();   // sets English as default + prepares UI
+            loadData();
+        };
     </script>
 </body>
 </html>
