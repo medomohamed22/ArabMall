@@ -1,3 +1,7 @@
+# Donate Way — Pi TOML
+# Place this file at: https://arabmall.netlify.app/.well-known/pi.toml
+
+
 VERSION="2.0.0"
 NETWORK_PASSPHRASE="Pi Testnet"
 HORIZON_URL="https://api.testnet.minepi.com"
