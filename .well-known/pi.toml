@@ -1,1 +1,24 @@
 
+VERSION="2.0.0"
+
+NETWORK_PASSPHRASE="Pi Testnet"
+HORIZON_URL="https://api.testnet.minepi.com"
+
+ACCOUNTS=[
+  "GBQ3H472BMOMTFRSK5P26FBRVOE3ZFCB5F3FTGXEGOV5CN7RAB6TRPJR"
+]
+
+[DOCUMENTATION]
+ORG_NAME="Donate"
+ORG_URL="https://arabmall.netlify.app"
+ORG_LOGO="https://arabmall.netlify.app/token_512.png"
+ORG_DESCRIPTION="Donate token on Pi Testnet for donations."
+
+[[CURRENCIES]]
+code="DONATE"
+issuer="GBQ3H472BMOMTFRSK5P26FBRVOE3ZFCB5F3FTGXEGOV5CN7RAB6TRPJR"
+display_decimals=2
+name="Donate Way"
+desc="Donate token on Pi Testnet for donations."
+image="https://arabmall.netlify.app/token_512.png"
+
