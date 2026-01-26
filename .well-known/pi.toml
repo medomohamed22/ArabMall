@@ -17,6 +17,6 @@ ORG_DESCRIPTION="Donate token on Pi Testnet for donations."
 code="DONATE"
 issuer="GBQ3H472BMOMTFRSK5P26FBRVOE3ZFCB5F3FTGXEGOV5CN7RAB6TRPJR"
 display_decimals=2
-name="Donate Way"
+name="Donate"
 desc="Donate token on Pi Testnet for donations."
 image="https://arabmall.netlify.app/token_512.png"
