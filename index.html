@@ -80,7 +80,6 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .hero-title { text-align: center; font-size: 2.5rem; color: #2d3436; margin-bottom: 40px; }
         
-        /* Category Filters Styles */
         .filter-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
         .filter-btn { padding: 8px 20px; border-radius: 25px; border: 2px solid var(--primary-purple); background: white; color: var(--primary-purple); font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .filter-btn.active, .filter-btn:hover { background: var(--primary-purple); color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(142, 68, 173, 0.3); }
@@ -97,7 +96,6 @@
         .progress-bar { width: 100%; height: 12px; background: #eee; border-radius: 20px; overflow: hidden; margin: 15px 0;}
         .progress-fill { height: 100%; background: linear-gradient(90deg, #a29bfe, #8e44ad); transition: 1.5s; }
         
-        /* Quick Amounts Styles */
         .quick-amounts { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 15px; }
         .quick-btn { flex: 1; padding: 10px 5px; border-radius: 15px; border: 1px solid rgba(142, 68, 173, 0.2); background: rgba(162, 155, 254, 0.05); color: var(--primary-purple); font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.9rem;}
         .quick-btn:hover { background: var(--primary-purple); color: white; }
@@ -124,64 +122,77 @@
         .rank-tag { position: absolute; top: -10px; background: #2d3436; color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
 
         .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 35px; max-width: 90%; text-align: center; position: relative; }
+        
+        /* تعديل المودال ليكون متجاوب ومرتب */
+        .modal-content { 
+            background: white; 
+            padding: 30px 20px 20px; 
+            border-radius: 35px; 
+            max-width: 90%; 
+            text-align: center; 
+            position: relative; 
+        }
         .modal-img { max-width: 100%; max-height: 60vh; border-radius: 20px; }
         
-        /* ضبط زر الإغلاق لكي يظهر بشكل متجاوب أعلى النافذة */
+        /* إصلاح زر الإغلاق ليكون بالداخل وواضح */
         .close-modal { 
             position: absolute; 
-            top: -15px; 
-            right: -15px; /* يظهر على اليمين للغة الإنجليزية */
-            width: 40px; 
-            height: 40px; 
-            background: var(--primary-purple); 
-            color: white; 
+            top: 15px; 
+            right: 15px; 
+            width: 35px; 
+            height: 35px; 
+            background: rgba(142, 68, 173, 0.1); 
+            color: var(--primary-purple); 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             cursor: pointer; 
-            border: 3px solid white; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+            font-size: 1.2rem;
+            transition: 0.3s; 
             z-index: 100;
         }
-        /* تغيير مكانه للغة العربية ليكون على اليسار */
-        html[dir="rtl"] .close-modal {
-            right: auto;
-            left: -15px;
-        }
+        .close-modal:hover { background: var(--primary-purple); color: white; }
+        html[dir="rtl"] .close-modal { right: auto; left: 15px; }
         
         #custom-alert { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2d3436; color: white; padding: 15px 35px; border-radius: 50px; display: none; z-index: 10001; }
         .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Profile Specific Styles */
+        /* تعديلات نافذة البروفايل لتكون أصغر ومرتبة */
         .profile-modal-content { 
-            max-width: 450px; 
+            max-width: 400px; /* جعلتها أنحف قليلاً */
             width: 90%; 
-            padding: 30px 20px; 
-            /* تم إزالة overflow-y: auto لكي لا يتم إخفاء زر الإغلاق */
+            max-height: 85vh; /* تمنع النافذة من أخذ طول الشاشة بالكامل */
+            overflow-y: auto; /* سكرول احتياطي للنافذة بالكامل لو الشاشة صغيرة جدا */
         }
+        /* شكل السكرول الخاص بالنافذة */
+        .profile-modal-content::-webkit-scrollbar { width: 5px; }
+        .profile-modal-content::-webkit-scrollbar-track { background: transparent; }
+        .profile-modal-content::-webkit-scrollbar-thumb { background: #dcdde1; border-radius: 10px; }
         
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; margin: 0 auto 15px; box-shadow: 0 10px 20px rgba(142, 68, 173, 0.2); }
-        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-        .profile-stat-box { background: rgba(142, 68, 173, 0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(142, 68, 173, 0.15); }
-        .profile-stat-value { font-size: 1.4rem; font-weight: 700; color: var(--primary-purple); }
-        .profile-stat-label { font-size: 0.85rem; color: #666; margin-top: 5px; }
+        /* تصغير الصورة الرمزية قليلاً */
+        .profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: var(--bg-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 10px; box-shadow: 0 10px 20px rgba(142, 68, 173, 0.2); }
         
-        /* History List - Scrollable Area */
+        /* تقليل المسافات في شبكة الإحصائيات */
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .profile-stat-box { background: rgba(142, 68, 173, 0.05); padding: 12px; border-radius: 15px; border: 1px solid rgba(142, 68, 173, 0.15); }
+        .profile-stat-value { font-size: 1.3rem; font-weight: 700; color: var(--primary-purple); }
+        .profile-stat-label { font-size: 0.8rem; color: #666; margin-top: 5px; }
+        
+        /* تعديل سجل التبرعات ليكون له طول ثابت مع سكرول واضح */
         .history-list { 
-            max-height: 200px; /* السكرول يطبق هنا فقط للحفاظ على النافذة متناسقة */
+            max-height: 180px; 
             overflow-y: auto; 
             overflow-x: hidden;
             background: #f8f9fa; 
             border-radius: 15px; 
             padding: 10px; 
             border: 1px solid #eee; 
+            margin-bottom: 5px;
         }
-        
-        /* تجميل شريط التمرير (Scrollbar) */
-        .history-list::-webkit-scrollbar { width: 8px; }
+        /* تجميل شريط التمرير (Scrollbar) للسجل */
+        .history-list::-webkit-scrollbar { width: 6px; }
         .history-list::-webkit-scrollbar-track { background: #f0f2f5; border-radius: 10px; }
         .history-list::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 10px; }
         .history-list::-webkit-scrollbar-thumb:hover { background: var(--primary-purple); }
@@ -262,7 +273,7 @@
 
     <div id="image-modal" class="modal" onclick="closeImage()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="close-modal" onclick="closeImage()">&times;</div>
+            <div class="close-modal" onclick="closeImage()">✕</div>
             <h3 id="modal-title" style="margin-bottom: 15px; color: var(--primary-purple);" data-i18n="modal_title_default">Your Donation Impact</h3>
             <img id="modal-img-src" src="" class="modal-img">
         </div>
@@ -270,11 +281,11 @@
 
     <div id="profile-modal" class="modal" onclick="closeProfile()">
         <div class="modal-content profile-modal-content" onclick="event.stopPropagation()">
-            <div class="close-modal" onclick="closeProfile()">&times;</div>
+            <div class="close-modal" onclick="closeProfile()">✕</div>
             
             <div class="profile-avatar" id="prof-avatar">U</div>
             <h2 style="color: var(--primary-purple); margin-bottom: 5px;"><span id="profile-username">@username</span></h2>
-            <div style="font-size: 0.9rem; color: #777; margin-bottom: 20px;" data-i18n="profile_title">My Profile</div>
+            <div style="font-size: 0.9rem; color: #777; margin-bottom: 15px;" data-i18n="profile_title">My Profile</div>
             
             <div class="profile-stats-grid">
                 <div class="profile-stat-box">
@@ -291,7 +302,7 @@
                 </div>
             </div>
 
-            <h3 style="margin: 25px 0 15px; color: var(--primary-purple); font-size: 1.1rem; text-align: center;" data-i18n="profile_history">Donation History</h3>
+            <h3 style="margin: 15px 0 10px; color: var(--primary-purple); font-size: 1.1rem; text-align: center;" data-i18n="profile_history">Donation History</h3>
             <div id="prof-history" class="history-list">
                 </div>
         </div>
