@@ -126,36 +126,53 @@
         .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 35px; max-width: 90%; text-align: center; position: relative; }
         .modal-img { max-width: 100%; max-height: 60vh; border-radius: 20px; }
-        .close-modal { position: absolute; top: -15px; left: -15px; width: 40px; height: 40px; background: var(--primary-purple); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        /* ضبط زر الإغلاق لكي يظهر بشكل متجاوب أعلى النافذة */
+        .close-modal { 
+            position: absolute; 
+            top: -15px; 
+            right: -15px; /* يظهر على اليمين للغة الإنجليزية */
+            width: 40px; 
+            height: 40px; 
+            background: var(--primary-purple); 
+            color: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            border: 3px solid white; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+            z-index: 100;
+        }
+        /* تغيير مكانه للغة العربية ليكون على اليسار */
+        html[dir="rtl"] .close-modal {
+            right: auto;
+            left: -15px;
+        }
         
         #custom-alert { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2d3436; color: white; padding: 15px 35px; border-radius: 50px; display: none; z-index: 10001; }
         .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Profile Specific Styles (MODIFIED FOR SCROLLING) */
+        /* Profile Specific Styles */
         .profile-modal-content { 
             max-width: 450px; 
             width: 90%; 
             padding: 30px 20px; 
-            max-height: 90vh; /* منع النافذة من تجاوز الشاشة */
-            overflow-y: auto; /* إضافة سكرول للنافذة نفسها إذا لزم الأمر */
+            /* تم إزالة overflow-y: auto لكي لا يتم إخفاء زر الإغلاق */
         }
         
-        /* تخصيص السكرول العام للنافذة */
-        .profile-modal-content::-webkit-scrollbar { width: 6px; }
-        .profile-modal-content::-webkit-scrollbar-track { background: transparent; }
-        .profile-modal-content::-webkit-scrollbar-thumb { background: #dcdde1; border-radius: 10px; }
-
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; margin: 0 auto 15px; box-shadow: 0 10px 20px rgba(142, 68, 173, 0.2); }
         .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
         .profile-stat-box { background: rgba(142, 68, 173, 0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(142, 68, 173, 0.15); }
         .profile-stat-value { font-size: 1.4rem; font-weight: 700; color: var(--primary-purple); }
         .profile-stat-label { font-size: 0.85rem; color: #666; margin-top: 5px; }
         
-        /* History List - Added Scrollbar constraints */
+        /* History List - Scrollable Area */
         .history-list { 
-            max-height: 200px; /* الارتفاع الأقصى للسجل، بمجرد الوصول إليه سيظهر السكرول */
-            overflow-y: auto; /* تفعيل التمرير العمودي */
+            max-height: 200px; /* السكرول يطبق هنا فقط للحفاظ على النافذة متناسقة */
+            overflow-y: auto; 
             overflow-x: hidden;
             background: #f8f9fa; 
             border-radius: 15px; 
@@ -163,7 +180,7 @@
             border: 1px solid #eee; 
         }
         
-        /* تخصيص شكل السكرول الخاص بسجل التبرعات ليكون واضحاً وجميلاً */
+        /* تجميل شريط التمرير (Scrollbar) */
         .history-list::-webkit-scrollbar { width: 8px; }
         .history-list::-webkit-scrollbar-track { background: #f0f2f5; border-radius: 10px; }
         .history-list::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 10px; }
