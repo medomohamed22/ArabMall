@@ -65,6 +65,14 @@
             
             <label>عنوان الحملة:</label>
             <input type="text" id="title" placeholder="مثال: إفطار صائم">
+
+            <label>فئة الحملة (التصنيف):</label>
+            <select id="category">
+                <option value="health">صحة</option>
+                <option value="education">تعليم</option>
+                <option value="food">إطعام</option>
+                <option value="emergency">طوارئ</option>
+            </select>
             
             <label>وصف الحملة:</label>
             <textarea id="desc" rows="3" placeholder="اكتب تفاصيل الحملة هنا..."></textarea>
@@ -112,7 +120,7 @@
         const SUPABASE_KEY = 'sb_publishable_tiuMncgWhf1YRWoD-uYQ3Q_ziI8OKci';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let allCampaigns = []; // لتخزين البيانات محلياً للتحقق السريع
+        let allCampaigns = []; 
 
         async function login() {
             const email = document.getElementById('email-input').value;
@@ -140,15 +148,27 @@
             selectDropdown.innerHTML = '<option value="">-- اختر حملة لرفع الأثر --</option>';
 
             data.forEach(c => {
+                // ترجمة الفئة للعرض
+                let catNameAr = 'غير محدد';
+                if(c.category === 'health') catNameAr = 'صحة';
+                if(c.category === 'education') catNameAr = 'تعليم';
+                if(c.category === 'food') catNameAr = 'إطعام';
+                if(c.category === 'emergency') catNameAr = 'طوارئ';
+
+                // تمرير المتغيرات لدالة التعديل بشكل آمن
+                const safeTitle = (c.title || '').replace(/'/g, "\\'");
+                const safeDesc = (c.description || '').replace(/'/g, "\\'");
+
                 listDiv.innerHTML += `
                     <div class="campaign-item">
                         <img src="${c.image_url || 'https://via.placeholder.com/50'}" class="img-preview">
                         <div class="campaign-info">
                             <strong>${c.title}</strong>
-                            <small>${c.target_amount} π | ${c.result_image_url ? '✅ الأثر مرفوع' : '⏳ بدون أثر'}</small>
+                            <br>
+                            <small>${c.target_amount} π | الفئة: <span style="color:var(--primary); font-weight:bold;">${catNameAr}</span> | ${c.result_image_url ? '✅ الأثر مرفوع' : '⏳ بدون أثر'}</small>
                         </div>
                         <div class="actions">
-                            <button class="btn btn-edit" onclick="editMode('${c.id}', '${c.title}', '${c.description}', '${c.target_amount}')">تعديل</button>
+                            <button class="btn btn-edit" onclick="editMode('${c.id}', '${safeTitle}', '${safeDesc}', '${c.target_amount}', '${c.category || 'health'}')">تعديل</button>
                             <button class="btn btn-del" onclick="deleteCamp('${c.id}')">حذف</button>
                         </div>
                     </div>
@@ -157,7 +177,6 @@
             });
         }
 
-        // للتحقق هل للحملة المختارة صورة أثر سابقة
         function checkExistingResult(id) {
             const container = document.getElementById('result-preview-container');
             const btn = document.getElementById('btn-result-action');
@@ -183,9 +202,10 @@
             const title = document.getElementById('title').value;
             const desc = document.getElementById('desc').value;
             const target = document.getElementById('target').value;
+            const category = document.getElementById('category').value; // جلب الفئة
             const file = document.getElementById('main-image-file').files[0];
 
-            if (!title || !target) return alert("أكمل البيانات الأساسية");
+            if (!title || !target || !category) return alert("أكمل البيانات الأساسية");
             document.getElementById('loading-overlay').style.display = 'flex';
 
             let imageUrl = null;
@@ -197,7 +217,8 @@
                 }
             }
 
-            const payload = { title, description: desc, target_amount: parseFloat(target) };
+            // إضافة الفئة category لمصفوفة البيانات
+            const payload = { title, description: desc, target_amount: parseFloat(target), category: category };
             if (imageUrl) payload.image_url = imageUrl;
 
             const { error } = id ? 
@@ -231,7 +252,6 @@
             loadData();
         }
 
-        // --- وظيفة جديدة: حذف صورة الأثر فقط ---
         async function deleteResultImage() {
             const campId = document.getElementById('select-campaign-for-result').value;
             if (!campId) return;
@@ -249,11 +269,14 @@
             }
         }
 
-        function editMode(id, title, desc, target) {
+        // استقبال الفئة parameter وإظهارها عند التعديل
+        function editMode(id, title, desc, target, category) {
             document.getElementById('edit-id').value = id;
             document.getElementById('title').value = title;
-            document.getElementById('desc').value = desc;
+            document.getElementById('desc').value = desc !== 'undefined' ? desc : '';
             document.getElementById('target').value = target;
+            document.getElementById('category').value = category; // تعيين الفئة
+            
             document.getElementById('form-title').innerText = "تعديل بيانات الحملة";
             document.getElementById('save-btn').innerText = "حفظ التعديلات";
             document.getElementById('cancel-btn').style.display = "block";
@@ -265,7 +288,9 @@
             document.getElementById('title').value = '';
             document.getElementById('desc').value = '';
             document.getElementById('target').value = '';
+            document.getElementById('category').value = 'health'; // العودة للافتراضي
             document.getElementById('main-image-file').value = '';
+            
             document.getElementById('form-title').innerText = "إدارة الحملات الجديدة";
             document.getElementById('save-btn').innerText = "نشر / تحديث الحملة الأساسية";
             document.getElementById('cancel-btn').style.display = "none";
