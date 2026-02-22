@@ -132,14 +132,43 @@
         .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Profile Specific Styles */
-        .profile-modal-content { max-width: 450px; width: 90%; padding: 30px 20px; }
+        /* Profile Specific Styles (MODIFIED FOR SCROLLING) */
+        .profile-modal-content { 
+            max-width: 450px; 
+            width: 90%; 
+            padding: 30px 20px; 
+            max-height: 90vh; /* منع النافذة من تجاوز الشاشة */
+            overflow-y: auto; /* إضافة سكرول للنافذة نفسها إذا لزم الأمر */
+        }
+        
+        /* تخصيص السكرول العام للنافذة */
+        .profile-modal-content::-webkit-scrollbar { width: 6px; }
+        .profile-modal-content::-webkit-scrollbar-track { background: transparent; }
+        .profile-modal-content::-webkit-scrollbar-thumb { background: #dcdde1; border-radius: 10px; }
+
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-gradient); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; margin: 0 auto 15px; box-shadow: 0 10px 20px rgba(142, 68, 173, 0.2); }
         .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
         .profile-stat-box { background: rgba(142, 68, 173, 0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(142, 68, 173, 0.15); }
         .profile-stat-value { font-size: 1.4rem; font-weight: 700; color: var(--primary-purple); }
         .profile-stat-label { font-size: 0.85rem; color: #666; margin-top: 5px; }
-        .history-list { max-height: 220px; overflow-y: auto; background: #f8f9fa; border-radius: 15px; padding: 10px; border: 1px solid #eee; }
+        
+        /* History List - Added Scrollbar constraints */
+        .history-list { 
+            max-height: 200px; /* الارتفاع الأقصى للسجل، بمجرد الوصول إليه سيظهر السكرول */
+            overflow-y: auto; /* تفعيل التمرير العمودي */
+            overflow-x: hidden;
+            background: #f8f9fa; 
+            border-radius: 15px; 
+            padding: 10px; 
+            border: 1px solid #eee; 
+        }
+        
+        /* تخصيص شكل السكرول الخاص بسجل التبرعات ليكون واضحاً وجميلاً */
+        .history-list::-webkit-scrollbar { width: 8px; }
+        .history-list::-webkit-scrollbar-track { background: #f0f2f5; border-radius: 10px; }
+        .history-list::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 10px; }
+        .history-list::-webkit-scrollbar-thumb:hover { background: var(--primary-purple); }
+
         html[dir="rtl"] .history-list { text-align: right; }
         html[dir="ltr"] .history-list { text-align: left; }
         .history-item { display: flex; justify-content: space-between; padding: 12px 10px; border-bottom: 1px solid #eaeaea; font-size: 0.95rem; align-items: center; }
@@ -300,7 +329,7 @@
         let campaigns = [];
         let globalDonorStats = []; 
         let currentLang = 'en';
-        let currentCategory = 'all'; // الفئة الافتراضية
+        let currentCategory = 'all'; 
 
         const I18N = {
             en: {
@@ -340,7 +369,6 @@
                 profile_rank: "Global Rank",
                 profile_history: "Donation History",
 
-                /* Category Filters */
                 filter_all: "All",
                 filter_health: "Health",
                 filter_education: "Education",
@@ -384,7 +412,6 @@
                 profile_rank: "تصنيفي العالمي",
                 profile_history: "سجل تبرعاتي",
 
-                /* Category Filters */
                 filter_all: "الكل",
                 filter_health: "صحة",
                 filter_education: "تعليم",
@@ -422,13 +449,10 @@
             applyLanguage();
         }
 
-        // دالة تفعيل وتصفية الحملات
         function filterCampaigns(category, btnElement) {
             currentCategory = category;
             
-            // إزالة الكلاس 'active' من كل الأزرار
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            // إضافة الكلاس 'active' للزر المضغوط
             if (btnElement) {
                 btnElement.classList.add('active');
             }
@@ -436,7 +460,6 @@
             renderCamps();
         }
 
-        // دالة وضع المبلغ السريع في خانة الإدخال
         function setQuickAmount(campaignId, amount) {
             document.getElementById(`in-${campaignId}`).value = amount;
         }
@@ -556,7 +579,6 @@
         function renderCamps() {
             const container = document.getElementById('campaigns-container');
             
-            // تطبيق الفلتر على المصفوفة بناءً على الفئة المختارة
             const filteredCampaigns = currentCategory === 'all' 
                 ? campaigns 
                 : campaigns.filter(c => c.category === currentCategory);
@@ -686,7 +708,6 @@
             btn.disabled = false;
             btn.innerText = text;
             document.getElementById('main-loader').style.display = 'none';
-            // تفريغ خانة الإدخال بعد نجاح التبرع
             if (text === t('btn_done')) {
                 const inputId = btn.id.replace('btn-', 'in-');
                 document.getElementById(inputId).value = '';
